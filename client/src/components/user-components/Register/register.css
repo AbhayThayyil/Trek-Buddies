@@ -1,0 +1,15 @@
+.custom-phone-input {
+    /* Add your custom styles here */
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 1.5vw; 
+    font-size: 1.5vw; 
+    color: #333;
+    background-color: #fff;
+  }
+  .custom-phone-input:focus {
+    outline: none;
+    border-color: white;
+    box-shadow: 0 0 0 1px #000;
+    
+  }
