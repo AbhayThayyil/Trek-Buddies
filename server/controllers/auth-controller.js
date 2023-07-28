@@ -64,20 +64,38 @@ module.exports = {
     try {
       // Check if user exists in DB
       console.log(req.body, "passed from frontend");
-      const user = await User.findOne({ email });
-      if (user) {
+      const foundUser = await User.findOne({ email });
+      if (foundUser) {
         // Exists,check password
-        const passwordCheck = await bcrypt.compare(password, user.password);
+        const passwordCheck = await bcrypt.compare(password, foundUser.password);
         if (passwordCheck) {
           // token
-          const token = jwt.sign(
-            { userId: user._id, email: user.email },
-            process.env.TOKEN_SECRET_KEY
+          const accessToken = jwt.sign(
+            { userId: foundUser._id, email: foundUser.email },
+            process.env.ACCESS_TOKEN_SECRET,
+            { expiresIn: "30s" }
           );
-          return res.cookie("access_token",token,{httpOnly:true}).status(200).json({
+          const refreshToken = jwt.sign(
+            { userId: foundUser._id, email: foundUser.email },
+            process.env.REFRESH_TOKEN_SECRET,
+            { expiresIn: "1d" }
+          );
+
+          // Saving Refresh Token with the Current User
+          foundUser.refreshToken = refreshToken;
+          await foundUser.save();
+
+          res.cookie("jwt", refreshToken, {
+            httpOnly: true,
+            sameSite: "None",
+            secure: true,
+            maxAge: 24 * 60 * 60 * 1000,
+          });
+          return res.status(200).json({
             userExists: true,
-            user,
+            foundUser,
             message: "User logged in successfully",
+            accessToken,
           });
         }
         return res
@@ -120,7 +138,27 @@ module.exports = {
     }
   },
 
-  userLogout:(req,res)=>{
-    return res.clearCookie("access_token").status(200).json({message:"Successfully Logged Out !"})
-  }
+  userLogout: async (req, res) => {
+    const cookies = req.cookies;
+    if (!cookies?.jwt) return res.sendStatus(204);
+    const refreshToken = cookies.jwt;
+
+    // Check if refresh Token is in DB
+    const foundUser = await User.findOne({ refreshToken });
+    if (!foundUser) {
+      res.clearCookie("jwt", {
+        httpOnly: true,
+        sameSite: "None",
+        secure: true,
+      });
+      return res.sendStatus(204);
+    }
+
+    //Delete the refresh Token in DB
+    foundUser.refreshToken = "";
+    await foundUser.save();
+
+    res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
+    return res.sendStatus(204);
+  },
 };

@@ -19,6 +19,11 @@ router.post("/login", postUserLogin);
 
 // USER LOGOUT
 
-router.get("/logout",authorization,userLogout)
+router.get("/logout",userLogout)
+
+
+router.get("/test",authorization,(req,res)=>{
+    res.send("This is a test route to check authorization")
+})
 
 module.exports = router;

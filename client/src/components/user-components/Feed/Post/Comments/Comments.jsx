@@ -33,7 +33,7 @@ const Comments = () => {
           gap={2}
         >
           <Avatar />
-          <TextField fullWidth={"true"} placeholder="Add a comment..." />
+          <TextField  placeholder="Add a comment..." />
           <Button
             sx={{
               backgroundColor: "#189AB4",

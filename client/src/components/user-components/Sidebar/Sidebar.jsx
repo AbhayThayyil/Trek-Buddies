@@ -14,6 +14,7 @@ import ApartmentIcon from "@mui/icons-material/Apartment";
 
 import { Link } from "react-router-dom";
 import React from "react";
+import MiniProfile from "./MiniProfile";
 
 const Sidebar = () => {
   return (
@@ -24,8 +25,11 @@ const Sidebar = () => {
         p={2}
         sx={{ display: { xs: "none", sm: "block" } }}
       >
-        <Box position={"fixed"} left={0} >
-          <List>
+        
+        <Box position={"fixed"}  justifyContent={'center'} >
+        <MiniProfile/>
+          
+          <List >
             <ListItem disablePadding>
               <ListItemButton component="a" href="#">
                 <ListItemIcon>

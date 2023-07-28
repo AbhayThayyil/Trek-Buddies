@@ -5,6 +5,7 @@ const {
   getSingleUserData,
   followUser,
   unfollowUser,
+  listUser,
 } = require("../controllers/user-controller");
 const User = require("../models/User");
 
@@ -26,5 +27,11 @@ router.put("/:id/follow",followUser)
 
 // Unfollow a user
 router.put("/:id/unfollow",unfollowUser)
+
+
+
+//TEST- List Users
+
+router.get("/test/listUsers",listUser)
 
 module.exports = router;

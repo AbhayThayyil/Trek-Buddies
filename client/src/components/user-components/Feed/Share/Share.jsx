@@ -13,9 +13,11 @@ const Share = () => {
       width={"100%"}
       height={"200px"}
       borderRadius={"10px"}
+      bgcolor={'white'}
       boxShadow={"0px 0px 16px -8px"}
       sx={{"@media (max-width: 600px)": {
         maxWidth: "100%",
+        
       }}}
     >
       <Box className="shareWrapper" padding={1}>
