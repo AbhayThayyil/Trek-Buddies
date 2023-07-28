@@ -16,6 +16,8 @@ import HomeIcon from "@mui/icons-material/Home";
 import ChatIcon from "@mui/icons-material/Chat";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 
+import { useSelector, useDispatch } from "react-redux";
+
 import React, { useEffect, useState } from "react";
 
 const StyledToolbar = styled(Toolbar)({
@@ -51,6 +53,16 @@ const UserBox = styled(Box)(({ theme }) => ({
 }));
 
 const Navigationbar = () => {
+  const dispatch = useDispatch();
+
+
+  // WRITE CODE : handle the logout here 
+  const handleLogout=()=>{
+
+  }
+
+  
+  const user = useSelector(state=>state.user)
   const [openMenu, setOpenMenu] = useState(false);
 
   return (
@@ -110,7 +122,7 @@ const Navigationbar = () => {
             }}
           >
             <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-            <Typography variant="span">John Doe</Typography>
+            <Typography variant="span">{user.name}</Typography>
           </UserBox>
         </StyledToolbar>
         <Menu
@@ -129,7 +141,7 @@ const Navigationbar = () => {
         >
           <MenuItem>Profile</MenuItem>
           <MenuItem>My account</MenuItem>
-          <MenuItem>Logout</MenuItem>
+          <MenuItem onClick={handleLogout}>Logout</MenuItem>
         </Menu>
       </AppBar>
     </>

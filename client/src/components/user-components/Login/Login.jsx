@@ -10,7 +10,7 @@ import {
 } from "@mui/material";
 import React from "react";
 import axios from "../../../utils/axios";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
 import { ToastContainer, toast } from "react-toastify";
@@ -18,8 +18,12 @@ import "react-toastify/dist/ReactToastify.css";
 import { showToast } from "../../../helpers/ToastHelper";
 
 import "./login.css";
+import { useDispatch, useSelector } from "react-redux";
+import { setUser } from "../../../Redux/slices/userSlice";
 
 const Login = () => {
+  const dispatch = useDispatch();
+
   const form = useForm({
     defaultValues: {
       email: "",
@@ -30,6 +34,10 @@ const Login = () => {
   const { errors } = formState;
 
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from?.pathname || "/";
+
+  console.log(from, "from location");
 
   const onSubmit = async (data, event) => {
     event.preventDefault();
@@ -37,18 +45,31 @@ const Login = () => {
     try {
       let response = await axios.post("/auth/login", data, {
         headers: { "Content-Type": "application/json" },
+        withCredentials: true,
       });
       if (response) {
         const successMessage = response.data.message;
-        showToast(successMessage,"success")
-        console.log(response);
+        showToast(successMessage, "success");
+        console.log(response.data);
+        const accessToken = response?.data?.accessToken;
+        response.data.foundUser.accessToken = accessToken;
         // console.log(response.data.message);
 
-        navigate("/");
+        // Setting userData in Redux
+        dispatch(
+          setUser({
+            accessToken: response.data.accessToken,
+            name:
+              response.data.foundUser.firstName + " " + response.data.foundUser.lastName,
+            userId: response.data.foundUser._id,
+            isAuthenticated: true,
+          })
+        );
+        navigate(from, { replace: true });
       }
     } catch (error) {
       const errorMessage = error.response.data.error;
-      showToast(errorMessage,"error")
+      showToast(errorMessage, "error");
       console.log(error);
       console.log(error.response.data, "error");
     }

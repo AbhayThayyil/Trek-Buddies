@@ -2,8 +2,6 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 
 module.exports = {
-  
-
   updateUser: async (req, res) => {
     if (req.body.userId === req.params.id) {
       // If you are updating a password
@@ -60,7 +58,9 @@ module.exports = {
         const userToFollow = await User.findById(req.params.id);
         const currentUser = await User.findById(req.body.userId);
         if (!userToFollow.followers.includes(req.body.userId)) {
-          await userToFollow.updateOne({ $push: { followers: req.body.userId } });
+          await userToFollow.updateOne({
+            $push: { followers: req.body.userId },
+          });
           await currentUser.updateOne({
             $push: { following: req.params.id },
           });
@@ -82,7 +82,9 @@ module.exports = {
         const userToUnfollow = await User.findById(req.params.id);
         const currentUser = await User.findById(req.body.userId);
         if (userToUnfollow.followers.includes(req.body.userId)) {
-          await userToUnfollow.updateOne({ $pull: { followers: req.body.userId } });
+          await userToUnfollow.updateOne({
+            $pull: { followers: req.body.userId },
+          });
           await currentUser.updateOne({
             $pull: { following: req.params.id },
           });
@@ -95,6 +97,20 @@ module.exports = {
       }
     } else {
       res.status(403).json("You cannot unfollow yourself");
+    }
+  },
+
+  listUser: async (req, res) => {
+    try {
+      const users = await User.find({});
+      console.log(users);
+      if (users) {
+        res.status(200).json(users);
+      } else {
+        res.status(400).json("Not found");
+      }
+    } catch (err) {
+      res.status(500).json(err);
     }
   },
 };
