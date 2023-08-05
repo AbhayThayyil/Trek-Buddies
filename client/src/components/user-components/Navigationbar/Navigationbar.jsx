@@ -16,9 +16,12 @@ import HomeIcon from "@mui/icons-material/Home";
 import ChatIcon from "@mui/icons-material/Chat";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 
+import { selectAllUsers } from "../../../Redux/slices/userSlice";
+
 import { useSelector, useDispatch } from "react-redux";
 
 import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 const StyledToolbar = styled(Toolbar)({
   display: "flex",
@@ -55,29 +58,28 @@ const UserBox = styled(Box)(({ theme }) => ({
 const Navigationbar = () => {
   const dispatch = useDispatch();
 
+  // TODO: WRITE CODE : handle the logout here
+  const handleLogout = () => {};
 
-  // WRITE CODE : handle the logout here 
-  const handleLogout=()=>{
-
-  }
-
-  
-  const user = useSelector(state=>state.user)
+  const user = useSelector(selectAllUsers);
+  console.log(user, "user");
   const [openMenu, setOpenMenu] = useState(false);
 
   return (
     <>
       <AppBar position="sticky" sx={{ backgroundColor: "#05445E" }}>
         <StyledToolbar>
-          <Typography
-            fontFamily="Irish Grover"
-            fontWeight={700}
-            fontSize={25}
-            color={"#D4F1F4"}
-            sx={{ display: { xs: "none", sm: "block" } }}
-          >
-            Trek Buddies
-          </Typography>
+          <Link to={"/"} style={{ textDecoration: "none" }}>
+            <Typography
+              fontFamily="Irish Grover"
+              fontWeight={700}
+              fontSize={25}
+              color={"#D4F1F4"}
+              sx={{ display: { xs: "none", sm: "block" } }}
+            >
+              Trek Buddies
+            </Typography>
+          </Link>
           <Typography
             fontFamily="Irish Grover"
             fontWeight={700}
@@ -122,7 +124,7 @@ const Navigationbar = () => {
             }}
           >
             <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-            <Typography variant="span">{user.name}</Typography>
+            <Typography variant="span">{`${user.firstName} ${user.lastName}`}</Typography>
           </UserBox>
         </StyledToolbar>
         <Menu

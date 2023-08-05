@@ -2,6 +2,19 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 
 module.exports = {
+  getAllUsers: async (req, res) => {
+    try {
+      const allUsers = await User.find();
+      if (allUsers) {
+        res.status(200).json(allUsers);
+      } else {
+        res.status(400).json("No users found");
+      }
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+
   updateUser: async (req, res) => {
     if (req.body.userId === req.params.id) {
       // If you are updating a password
@@ -56,7 +69,9 @@ module.exports = {
     if (req.body.userId !== req.params.id) {
       try {
         const userToFollow = await User.findById(req.params.id);
-        const currentUser = await User.findById(req.body.userId);
+        const currentUser =await User.findById(req.userId)
+        console.log(currentUser,"user");
+        // const currentUser = await User.findById(req.body.userId);
         if (!userToFollow.followers.includes(req.body.userId)) {
           await userToFollow.updateOne({
             $push: { followers: req.body.userId },
@@ -100,10 +115,19 @@ module.exports = {
     }
   },
 
+  getFriends: async (req, res) => {
+    try {
+      const user = await User.findById(req.params.userId);
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+
   listUser: async (req, res) => {
     try {
+      console.log(req.userId,"userId from token");
       const users = await User.find({});
-      console.log(users);
+      // console.log(users);
       if (users) {
         res.status(200).json(users);
       } else {

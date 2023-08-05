@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { createPost, updatePost, deletePost, likePost, getSinglePost, getTimelinePosts, reportPost, commentOnPost, deleteComment } = require("../controllers/post-controller");
+const { createPost, updatePost, deletePost, likePost, getSinglePost, getTimelinePosts, reportPost, commentOnPost, deleteComment, getUserPosts } = require("../controllers/post-controller");
 const Post = require("../models/Post");
 
 //Create a post
@@ -27,6 +27,8 @@ router.put("/:id/report",reportPost)
 router.get("/:id",getSinglePost)
 
 //Get timeline posts - fetch posts of self and friends 
-router.get("/timeline/all",getTimelinePosts)
+router.get("/timeline/:userId",getTimelinePosts)
+
+router.get("/profile/:userId",getUserPosts)
 
 module.exports = router;

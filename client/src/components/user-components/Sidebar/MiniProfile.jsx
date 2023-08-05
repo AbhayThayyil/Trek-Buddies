@@ -1,9 +1,13 @@
 import { Avatar, Box, Typography } from "@mui/material";
 import React from "react";
 
-import './miniProfile.css'
+import "./miniProfile.css";
+import { useSelector } from "react-redux";
+
+import { selectAllUsers } from "../../../Redux/slices/userSlice";
 
 const MiniProfile = () => {
+  const user = useSelector(selectAllUsers)
   return (
     <>
       <Box
@@ -23,9 +27,24 @@ const MiniProfile = () => {
             alignItems={"center"}
           >
             <img src="/Images/coverPic.avif" alt="" className="userCardCover" />
-            <Avatar src="" sx={{position:'absolute',left:0,right:0,margin:'auto',top:'30px', width:'55px' ,height:'55px'}}  />
-            <Typography variant="h2" fontSize={25} marginTop={3}>Name</Typography>
-            <Typography variant="h4" fontSize={15}>Bio</Typography>
+            <Avatar
+              src=""
+              sx={{
+                position: "absolute",
+                left: 0,
+                right: 0,
+                margin: "auto",
+                top: "60px",
+                width: "55px",
+                height: "55px",
+              }}
+            />
+            <Typography variant="h2" fontSize={20} marginTop={4}>
+            {`${user.firstName} ${user.lastName}`}
+            </Typography>
+            <Typography variant="h4" fontSize={15}>
+              {user.bio}
+            </Typography>
           </Box>
         </Box>
       </Box>

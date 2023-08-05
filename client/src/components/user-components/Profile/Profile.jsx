@@ -1,12 +1,50 @@
 import { Box, Button, Grid, TextField, Typography } from "@mui/material";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "../../../utils/axios";
+
 
 import "./profile.css";
 import Feed from "../Feed/Feed";
 import Share from "../Feed/Share/Share";
 import Post from "../Feed/Post/Post";
+import { useDispatch, useSelector } from "react-redux";
+import { useParams } from "react-router-dom";
+
+import { selectAllUsers } from "../../../Redux/slices/userSlice";
 
 const Profile = () => {
+  const [postOwner, setPostOwner] = useState({});
+  const user = useSelector(selectAllUsers);
+  const userId = useParams().userId;
+  // console.log(userId, "params");
+  const [followed, setFollowed] = useState(user.following.includes(userId));
+
+  useEffect(() => {
+    setFollowed(user.following.includes(userId));
+  }, [user, userId]);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const response = await axios.get(`/users/${userId}`);
+      console.log(response.data, "User details of post");
+      setPostOwner(response.data);
+    };
+    fetchUser();
+  }, [userId]);
+
+  const handleFollow = async () => {
+    try {
+      if (followed) {
+        await axios.put(`/${userId}/unfollow`, { userId: user._id });
+      } else {
+        await axios.put(`/${userId}/follow`, { userId: user._id });
+      }
+    } catch (err) {
+      console.log(err);
+    }
+    setFollowed(!followed);
+  };
+
   return (
     <>
       <Box flex={4} p={2}>
@@ -38,7 +76,7 @@ const Profile = () => {
             }}
           >
             <Typography variant="h4" className="profileInfoName">
-              John Smith
+              {`${postOwner.firstName} ${postOwner.lastName}`}
             </Typography>
             <Typography
               component={"span"}
@@ -63,32 +101,26 @@ const Profile = () => {
             <Typography fontWeight={500}>10 Followers</Typography>
             <Typography fontWeight={500}>10 Following</Typography>
             <Typography fontWeight={500}>10 Posts</Typography>
-            <Button color="error">Delete Profile</Button>
+            {user._id === userId ? (
+              <Button color="error">Delete Profile</Button>
+            ) : followed ? (
+              <Button color="error" onClick={handleFollow}>
+                Unfollow
+              </Button>
+            ) : (
+              <Button color="success" onClick={handleFollow}>
+                Follow
+              </Button>
+            )}
           </Box>
         </Box>
-        <Box className="profileBottom" marginTop={5}>
-          <Grid container spacing={2} justifyContent={"center"}>
-            <Grid item xs={12} md={8}>
-              <Share />
-            </Grid>
-          </Grid>
-        </Box>
-        <Box className="profilePosts" marginTop={5} display={"flex"}>
 
+        <Box className="profilePosts" marginTop={5} display={"flex"}>
           {/* //TODO: DUMMY SET OF LISTS TO BE CHANGED LATER  */}
-          
-          <Grid container spacing={2} >
+
+          <Grid container spacing={2} justifyContent={"center"}>
             <Grid item xs={12} md={6} flexDirection={"row"}>
-              <Post />
-            </Grid>
-            <Grid item xs={12} md={6} flexDirection={"row"}>
-              <Post />
-            </Grid>
-            <Grid item xs={12} md={6} flexDirection={"row"}>
-              <Post />
-            </Grid>
-            <Grid item xs={12} md={6} flexDirection={"row"}>
-              <Post />
+              <Feed userId={userId} />
             </Grid>
           </Grid>
         </Box>

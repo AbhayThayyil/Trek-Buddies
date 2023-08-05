@@ -19,7 +19,12 @@ import { showToast } from "../../../helpers/ToastHelper";
 
 import "./login.css";
 import { useDispatch, useSelector } from "react-redux";
-import { setUser } from "../../../Redux/slices/userSlice";
+import {
+  updateUser,
+  selectAllUsers,
+  selectAllStatus,
+  selectAllError,
+} from "../../../Redux/slices/userSlice";
 
 const Login = () => {
   const dispatch = useDispatch();
@@ -41,39 +46,24 @@ const Login = () => {
 
   const onSubmit = async (data, event) => {
     event.preventDefault();
-    // console.log(data);
-    try {
-      let response = await axios.post("/auth/login", data, {
-        headers: { "Content-Type": "application/json" },
-        withCredentials: true,
-      });
-      if (response) {
-        const successMessage = response.data.message;
-        showToast(successMessage, "success");
-        console.log(response.data);
-        const accessToken = response?.data?.accessToken;
-        response.data.foundUser.accessToken = accessToken;
-        // console.log(response.data.message);
+    // console.log(data, "onsubmit data");
 
-        // Setting userData in Redux
-        dispatch(
-          setUser({
-            accessToken: response.data.accessToken,
-            name:
-              response.data.foundUser.firstName + " " + response.data.foundUser.lastName,
-            userId: response.data.foundUser._id,
-            isAuthenticated: true,
-          })
-        );
-        navigate(from, { replace: true });
-      }
-    } catch (error) {
-      const errorMessage = error.response.data.error;
-      showToast(errorMessage, "error");
-      console.log(error);
-      console.log(error.response.data, "error");
-    }
+    dispatch(updateUser(data))
+      .unwrap()
+      .then((response) => {
+        if (response) {
+          console.log(response,"response after login");
+          navigate(from, { replace: true });
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+        const errorMessage = error.message;
+        showToast(errorMessage, "error");
+      });
   };
+
+
   return (
     <>
       <form noValidate>

@@ -53,6 +53,7 @@ module.exports = {
   likePost: async (req, res) => {
     try {
       const post = await Post.findById(req.params.id);
+
       if (!post.likes.includes(req.body.owner)) {
         await post.updateOne({ $push: { likes: req.body.owner } });
         res.status(200).json({ message: "The post has been liked" });
@@ -76,17 +77,34 @@ module.exports = {
 
   getTimelinePosts: async (req, res) => {
     try {
-      const currentUser = await User.findById(req.body.userId);
+      const currentUser = await User.findById(req.params.userId);
 
-      const userPosts = await Post.find({ owner: currentUser._id });
+      const userPosts = await Post.find({ owner: currentUser._id }).populate(
+        "owner"
+      );
 
       const friendsPosts = await Promise.all(
         currentUser.following.map((friendId) => {
-          return Post.find({ owner: friendId });
+          return Post.find({ owner: friendId }).populate("owner");
         })
       );
       console.log(friendsPosts);
       res.status(200).json(userPosts.concat(...friendsPosts));
+    } catch (err) {
+      res.status(500).json(err);
+    }
+  },
+
+  getUserPosts: async (req, res) => {
+    try {
+      const currentUser = await User.findById(req.params.userId);
+
+      const userPosts = await Post.find({ owner: currentUser._id }).populate(
+        "owner"
+      );
+
+      console.log(userPosts, "user's posts");
+      res.status(200).json(userPosts);
     } catch (err) {
       res.status(500).json(err);
     }
@@ -129,6 +147,14 @@ module.exports = {
         await postToComment.updateOne({
           $push: { comments: commentObject },
         });
+
+        await postToComment.populate({
+          path: "comments",
+          populate: {
+            path: "userId",
+          },
+        });
+
         res.status(200).json({ message: "Commented successfully" });
       }
     } catch (err) {
@@ -153,13 +179,13 @@ module.exports = {
       if (comment.userId.toString() !== req.body.userId) {
         return res
           .status(403)
-          .json({error:"You are not authorized to delete this comment"});
+          .json({ error: "You are not authorized to delete this comment" });
       }
 
       post.comments.pull(comment._id);
       await post.save();
 
-      res.json({message:"Comment deleted successfully"});
+      res.json({ message: "Comment deleted successfully" });
     } catch (err) {
       res.status(500).json(err);
     }
