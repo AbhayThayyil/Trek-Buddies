@@ -12,7 +12,7 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 
 import React, { useState } from "react";
 
-const Comments = () => {
+const Comments = ({comment}) => {
   const [commentSettings, setCommentSettings] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
 
@@ -58,7 +58,7 @@ const Comments = () => {
           <Box sx={{ flex: 1, marginLeft: 2 }}>
             <Typography component={"span"} variant="h6">
               {" "}
-              John Doe
+              {comment}
             </Typography>
             <Typography component={"span"} marginLeft={2} color={"grey"}>
               {" "}
@@ -69,8 +69,7 @@ const Comments = () => {
               fullWidth={"true"}
               sx={{ wordWrap: "break-word", maxWidth: "350px" }}
             >
-              This is a comment .This is for test purpose only.I am making it
-              long for testing purposes
+              {comment.comment}
             </Typography>
           </Box>
 

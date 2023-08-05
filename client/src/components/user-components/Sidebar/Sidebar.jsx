@@ -15,21 +15,28 @@ import ApartmentIcon from "@mui/icons-material/Apartment";
 import { Link } from "react-router-dom";
 import React from "react";
 import MiniProfile from "./MiniProfile";
+import { useSelector } from "react-redux";
+
+import { selectAllUsers } from "../../../Redux/slices/userSlice";
+
+
 
 const Sidebar = () => {
+  const user=useSelector(selectAllUsers)
   return (
     <>
       <Box
         bgcolor={"#189AB4"}
         flex={1}
         p={2}
-        sx={{ display: { xs: "none", sm: "block" } }}
+        sx={{ display: { xs: "none", sm: "block" }, position: "sticky" }}
       >
-        
-        <Box position={"fixed"}  justifyContent={'center'} >
-        <MiniProfile/>
-          
-          <List >
+        <Box position={"fixed"} justifyContent={"center"}>
+          <Link to={`/profile/${user?._id}`} style={{textDecoration:'none',color:'black'}}>
+            <MiniProfile />
+          </Link>
+
+          <List>
             <ListItem disablePadding>
               <ListItemButton component="a" href="#">
                 <ListItemIcon>
@@ -70,6 +77,18 @@ const Sidebar = () => {
                 <ListItemText primary="Accomodations" />
               </ListItemButton>
             </ListItem>
+
+            <Link to={"/listUsers"}>
+            <ListItem disablePadding>
+              <ListItemButton component="a" href="#">
+                <ListItemIcon>
+                  <ApartmentIcon />
+                </ListItemIcon>
+                <ListItemText primary="Accomodations" />
+              </ListItemButton>
+            </ListItem>
+            </Link>
+
           </List>
         </Box>
       </Box>

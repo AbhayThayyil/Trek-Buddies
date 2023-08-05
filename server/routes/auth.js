@@ -23,7 +23,12 @@ router.get("/logout",userLogout)
 
 
 router.get("/test",authorization,(req,res)=>{
-    res.send("This is a test route to check authorization")
+    console.log(req.userId,req.email);
+    const user={
+        id:req.userId,
+        email:req.email
+    }
+    res.status(200).json({user,message:"Test Success"})
 })
 
 module.exports = router;

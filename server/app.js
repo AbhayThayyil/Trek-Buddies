@@ -9,6 +9,8 @@ const cors = require("cors");
 const corsOptions = require("./config/cors/corsOptions");
 const morgan = require("morgan");
 const mongooseConnection = require("./config/database");
+const multer = require("multer");
+
 
 const { credentials } = require("./middlewares/credentials");
 
@@ -17,6 +19,26 @@ app.use(credentials);
 // CORS
 
 app.use(cors(corsOptions));
+
+//multer
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/images");
+  },
+  filename: (req, file, cb) => {
+    console.log(req.body);
+    cb(null, req.body.name);
+  },
+});
+
+const upload = multer({ storage });
+app.post("/api/upload", upload.single("file"), (req, res) => {
+  try {
+    return res.status(200).json("File Uploaded Successfully");
+  } catch (err) {
+    console.log(err, "multer error");
+  }
+});
 
 const userRoute = require("./routes/users");
 const authRoute = require("./routes/auth");
@@ -28,6 +50,9 @@ dotenv.config();
 
 mongooseConnection();
 
+//setting path to access image from public folder
+app.use("/images", express.static(path.join(__dirname, "public/images")));
+
 //middleware
 
 app.use(express.json());
@@ -36,7 +61,7 @@ app.use(helmet());
 app.use(morgan("common"));
 
 //Serve static files
-app.use(express.static(path.join(__dirname, "/public")));
+// app.use(express.static(path.join(__dirname, "/public")));
 
 //api addresses
 

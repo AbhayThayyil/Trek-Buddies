@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
@@ -15,13 +15,14 @@ import Missing from "./components/user-components/404/404";
 import RequireAuth from "./components/RequireAuth";
 import Users from "./components/Users";
 import ProfilePage from "./pages/user-pages/ProfilePage/ProfilePage";
+import Layout from "./components/Layout";
 
 function App() {
   return (
     <>
       <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <Router>
-          <Routes>
+        <Routes>
+          <Route path="/" element={<Layout />}>
             {/* USER ROUTES */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<Signup />} />
@@ -32,7 +33,7 @@ function App() {
               <Route path="/listUsers" element={<Users />} />
             </Route>
 
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/:userId" element={<ProfilePage />} />
             {/* <Route path="/otp" element={<OtpSignupPage />} /> */}
 
             {/* ADMIN ROUTES */}
@@ -40,8 +41,8 @@ function App() {
             <Route path="/admin" element={<AdminDashboardPage />} />
 
             <Route path="*" element={<Missing />} />
-          </Routes>
-        </Router>
+          </Route>
+        </Routes>
       </LocalizationProvider>
     </>
   );

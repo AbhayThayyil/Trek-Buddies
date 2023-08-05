@@ -67,8 +67,8 @@ module.exports = {
       const foundUser = await User.findOne({ email });
       if (foundUser) {
         // Exists,check password
-        const passwordCheck = await bcrypt.compare(password, foundUser.password);
-        if (passwordCheck) {
+        const passwordMatch = await bcrypt.compare(password, foundUser.password);
+        if (passwordMatch) {
           // token
           const accessToken = jwt.sign(
             { userId: foundUser._id, email: foundUser.email },
@@ -83,7 +83,8 @@ module.exports = {
 
           // Saving Refresh Token with the Current User
           foundUser.refreshToken = refreshToken;
-          await foundUser.save();
+          const result=await foundUser.save();
+          console.log(result);
 
           res.cookie("jwt", refreshToken, {
             httpOnly: true,
@@ -93,7 +94,7 @@ module.exports = {
           });
           return res.status(200).json({
             userExists: true,
-            foundUser,
+            result,
             message: "User logged in successfully",
             accessToken,
           });
@@ -158,7 +159,7 @@ module.exports = {
     foundUser.refreshToken = "";
     await foundUser.save();
 
-    res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
-    return res.sendStatus(204);
+    res.clearCookie("jwt", { httpOnly: true,sameSite: "None", secure: true   });  //  
+    return res.status(204).json("Logged out successfully");
   },
 };

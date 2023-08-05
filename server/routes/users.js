@@ -6,12 +6,13 @@ const {
   followUser,
   unfollowUser,
   listUser,
+  getFriends,
+  getAllUsers,
 } = require("../controllers/user-controller");
 const User = require("../models/User");
+const {authorization} =require("../middlewares/auth")
 
-router.get("/", (req, res) => {
-  res.send("First test");
-});
+router.get("/", getAllUsers);
 
 // Update a user
 router.put("/:id", updateUser);
@@ -23,15 +24,17 @@ router.delete("/:id", deleteUser);
 router.get("/:id", getSingleUserData);
 
 // Follow a user
-router.put("/:id/follow",followUser)
+router.put("/:id/follow",authorization,followUser)
 
 // Unfollow a user
 router.put("/:id/unfollow",unfollowUser)
+
+router.get("/friends/:userId",getFriends)
 
 
 
 //TEST- List Users
 
-router.get("/test/listUsers",listUser)
+router.get("/test/listUsers",authorization,listUser)
 
 module.exports = router;

@@ -1,7 +1,26 @@
 import { Avatar, AvatarGroup, Box, Typography } from "@mui/material";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "../../../utils/axios";
+import { Link } from "react-router-dom";
+import { useSelector } from "react-redux";
+
+import { selectAllUsers } from "../../../Redux/slices/userSlice";
 
 const Rightbar = () => {
+  const [allUsers, setAllUsers] = useState([]);
+  const user = useSelector(selectAllUsers);
+  useEffect(() => {
+    const fetchAllUsers = async () => {
+      const response = await axios.get(`/users`);
+      console.log(response.data, "all users");
+
+      setAllUsers(
+        response.data.filter((users) => !users._id.includes(user._id))
+      );
+    };
+    fetchAllUsers();
+  }, []);
+
   return (
     <>
       <Box
@@ -24,18 +43,19 @@ const Rightbar = () => {
           <Typography variant="h6" fontWeight={200} marginTop={10}>
             People you might know
           </Typography>
-          <Box display={"flex"} alignItems={"center"} margin={2} >
-            <Avatar />
-            <Typography marginLeft={2}>Name</Typography>
-          </Box>
-          <Box display={"flex"} alignItems={"center"} margin={2} >
-            <Avatar />
-            <Typography marginLeft={2}>Name</Typography>
-          </Box>
-          <Box display={"flex"} alignItems={"center"} margin={2} >
-            <Avatar />
-            <Typography marginLeft={2}>Name</Typography>
-          </Box>
+
+          {allUsers.map((user) => (
+            <Link
+              to={`/profile/${user?._id}`}
+              style={{ textDecoration: "none", color: "black" }}
+              key={user._id}
+            >
+              <Box display={"flex"} alignItems={"center"} margin={2} >
+                <Avatar />
+                <Typography marginLeft={2}>{user.firstName}</Typography>
+              </Box>
+            </Link>
+          ))}
         </Box>
       </Box>
     </>
