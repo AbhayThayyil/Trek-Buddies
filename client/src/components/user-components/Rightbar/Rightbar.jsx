@@ -9,6 +9,9 @@ import { selectAllUsers } from "../../../Redux/slices/userSlice";
 const Rightbar = () => {
   const [allUsers, setAllUsers] = useState([]);
   const user = useSelector(selectAllUsers);
+
+  const PF = import.meta.env.VITE_APP_PUBLIC_FOLDER;
+
   useEffect(() => {
     const fetchAllUsers = async () => {
       const response = await axios.get(`/users`);

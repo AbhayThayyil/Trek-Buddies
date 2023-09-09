@@ -19,20 +19,24 @@ import { useSelector } from "react-redux";
 
 import { selectAllUsers } from "../../../Redux/slices/userSlice";
 
-
-
 const Sidebar = () => {
-  const user=useSelector(selectAllUsers)
+  const user = useSelector(selectAllUsers);
+
+  const PF = import.meta.env.VITE_APP_PUBLIC_FOLDER;
+
   return (
     <>
       <Box
         bgcolor={"#189AB4"}
-        flex={1}
+        // flex={1}
         p={2}
-        sx={{ display: { xs: "none", sm: "block" }, position: "sticky" }}
+        sx={{ display: { xs: "none", sm: "block" ,top:'64px',height:'100vh',overflowY: "auto"}, position: "sticky" }}
       >
-        <Box position={"fixed"} justifyContent={"center"}>
-          <Link to={`/profile/${user?._id}`} style={{textDecoration:'none',color:'black'}}>
+        <Box >
+          <Link
+            to={`/profile/${user?._id}`}
+            style={{ textDecoration: "none", color: "black" }}
+          >
             <MiniProfile />
           </Link>
 
@@ -61,14 +65,21 @@ const Sidebar = () => {
                 <ListItemText primary="Travel Mates" />
               </ListItemButton>
             </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton component="a" href="#">
-                <ListItemIcon>
-                  <MapIcon />
-                </ListItemIcon>
-                <ListItemText primary="Trips" />
-              </ListItemButton>
-            </ListItem>
+            
+            <Link
+              to={"/trip"}
+              style={{ textDecoration: "none", color: "black" }}
+            >
+              <ListItem disablePadding>
+                <ListItemButton >
+                  <ListItemIcon>
+                    <MapIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Trips" />
+                </ListItemButton>
+              </ListItem>
+            </Link>
+
             <ListItem disablePadding>
               <ListItemButton component="a" href="#">
                 <ListItemIcon>
@@ -79,16 +90,15 @@ const Sidebar = () => {
             </ListItem>
 
             <Link to={"/listUsers"}>
-            <ListItem disablePadding>
-              <ListItemButton component="a" href="#">
-                <ListItemIcon>
-                  <ApartmentIcon />
-                </ListItemIcon>
-                <ListItemText primary="Accomodations" />
-              </ListItemButton>
-            </ListItem>
+              <ListItem disablePadding>
+                <ListItemButton >
+                  <ListItemIcon>
+                    <ApartmentIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="list users" />
+                </ListItemButton>
+              </ListItem>
             </Link>
-
           </List>
         </Box>
       </Box>

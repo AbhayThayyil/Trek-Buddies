@@ -98,7 +98,7 @@ const Register = () => {
   };
 
   const onSignup = () => {
-    //
+    //todo: set to false during production.This is for test only
     auth.settings.appVerificationDisabledForTesting = true;
 
     //

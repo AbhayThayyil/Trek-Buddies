@@ -1,18 +1,18 @@
-const express = require("express");
-const cookieParser = require("cookie-parser");
+import express from "express";
+import cookieParser from "cookie-parser";
 const app = express();
-const path = require("path");
-const mongoose = require("mongoose");
-const dotenv = require("dotenv");
-const helmet = require("helmet");
-const cors = require("cors");
-const corsOptions = require("./config/cors/corsOptions");
-const morgan = require("morgan");
-const mongooseConnection = require("./config/database");
-const multer = require("multer");
 
+import path from "path";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import helmet from "helmet";
+import cors from "cors";
+import { corsOptions } from "./config/cors/corsOptions.js";
+import morgan from "morgan";
+import { mongooseConnection } from "./config/database.js";
+import multer from "multer";
+import { credentials } from "./middlewares/credentials.js";
 
-const { credentials } = require("./middlewares/credentials");
 
 // to be used just before cors
 app.use(credentials);
@@ -20,38 +20,24 @@ app.use(credentials);
 
 app.use(cors(corsOptions));
 
-//multer
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "public/images");
-  },
-  filename: (req, file, cb) => {
-    console.log(req.body);
-    cb(null, req.body.name);
-  },
-});
+//setting path to access image from public folder
+const __filename = new URL(import.meta.url).pathname;
+const __dirname = path.dirname(__filename);
+app.use("/images", express.static(path.join(__dirname, "public/images")));
 
-const upload = multer({ storage });
-app.post("/api/upload", upload.single("file"), (req, res) => {
-  try {
-    return res.status(200).json("File Uploaded Successfully");
-  } catch (err) {
-    console.log(err, "multer error");
-  }
-});
 
-const userRoute = require("./routes/users");
-const authRoute = require("./routes/auth");
-const adminAuthRoute = require("./routes/adminAuth");
-const postRoute = require("./routes/posts");
-const refreshRoute = require("./routes/refresh");
+
+import userRoute from './routes/users.js';
+import authRoute from './routes/auth.js';
+import adminAuthRoute from './routes/adminAuth.js';
+import postRoute from './routes/posts.js';
+import tripRoute from './routes/trip.js';
+import refreshRoute from './routes/refresh.js';
+import adminRoute from './routes/admin.js';
 
 dotenv.config();
 
 mongooseConnection();
-
-//setting path to access image from public folder
-app.use("/images", express.static(path.join(__dirname, "public/images")));
 
 //middleware
 
@@ -69,7 +55,9 @@ app.use("/api/users", userRoute);
 app.use("/api/auth", authRoute);
 app.use("/api/adminAuth", adminAuthRoute);
 app.use("/api/posts", postRoute);
+app.use("/api/trip", tripRoute);
 app.use("/api/refresh", refreshRoute);
+app.use("/api/admin", adminRoute);
 
 app.get("/message", (req, res) => {
   res.json({ message: "Hello from server" });

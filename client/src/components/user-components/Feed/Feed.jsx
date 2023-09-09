@@ -3,34 +3,40 @@ import Post from "./Post/Post";
 import { Box, Button } from "@mui/material";
 import Share from "./Share/Share";
 import { Link } from "react-router-dom";
-
 import axios from "../../../utils/axios";
-import { useSelector } from "react-redux";
+
+import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
+import { useSelector ,useDispatch} from "react-redux";
 
 import { selectAllUsers } from "../../../Redux/slices/userSlice";
+import { fetchPosts, getAllPosts } from "../../../Redux/slices/postSlice";
 
 const Feed = ({ userId }) => {
-  const [posts, setPosts] = useState([]);
+  const axiosPrivate=useAxiosPrivate()
+
+  const dispatch=useDispatch()
+  
+  const posts=useSelector(getAllPosts)
   const user = useSelector(selectAllUsers);
   // console.log(user, "user data from redux store");
+  
 
-  useEffect(() => {
-    const fetchPosts = async () => {
-      const response = userId
-        ? await axios.get(`/posts/profile/${userId}`)
-        : await axios.get(`/posts/timeline/${user._id}`);
-      console.log(response.data, "posts fetched");
-      setPosts(response.data.reverse());
-    };
-    fetchPosts();
-  }, [userId, user._id]);
+  const PF = import.meta.env.VITE_APP_PUBLIC_FOLDER;
+
+  
+
+  useEffect(()=>{
+    dispatch(fetchPosts({userId,axiosPrivate}))
+    // console.log('fetch posts useeffect runs');
+    
+  },[dispatch,userId,axiosPrivate])
 
   return (
     <>
-      <Box flex={3.5} p={2}>
+      <Box flex={3.5} p={2} >
         {(!userId || user._id === userId) && <Share />}
         {posts.map((post) => (
-          <Post key={post._id} post={post} />
+          <Post key={post._id} post={post} development={import.meta.env.VITE_APP_DEVELOPMENT==='true'} />
         ))}
       </Box>
     </>

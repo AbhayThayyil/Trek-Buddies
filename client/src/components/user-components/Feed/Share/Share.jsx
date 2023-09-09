@@ -5,60 +5,85 @@ import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import CancelIcon from "@mui/icons-material/Cancel";
-import { blue } from "@mui/material/colors";
-import { useSelector } from "react-redux";
-import axios from "../../../../utils/axios";
+
+import noAvatarImage from "../../../../assets/noAvatar.jpg";
+
+import { useSelector, useDispatch } from "react-redux";
+import useAxiosPrivate from "../../../../hooks/useAxiosPrivate";
 import { selectAllUsers } from "../../../../Redux/slices/userSlice";
+import { createPost, fetchPosts } from "../../../../Redux/slices/postSlice";
 
 const Share = () => {
   const user = useSelector(selectAllUsers);
-  const [file, setFile] = useState(null);
+  const PF = import.meta.env.VITE_APP_PUBLIC_FOLDER;
+
+  const dispatch = useDispatch();
+
+  const [uploadedImage, setUploadedImage] = useState(null);
+  const imageRef = useRef();
   const [description, setDescription] = useState("");
-  const [imageURL, setImageURL] = useState(null);
 
-  useEffect(() => {
-    if (file) {
-      setImageURL(URL.createObjectURL(file));
-    }
-  }, [file]);
+  const axiosPrivate = useAxiosPrivate();
 
-  const submitHandler = async (e) => {
-    e.preventDefault();
-    const newPost = {
-      owner: user._id,
-      description: description,
-    };
-    
-    // store post
-    if (file) {
-      const data = new FormData();
-      const fileName = Date.now() + file.name;
-      data.append("file", file);
-      data.append("name", fileName);
-      newPost.image = fileName;
-      console.log(data, "data check");
-      try {
-        await axios.post("/upload", data, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-      } catch (err) {
-        console.log(err);
-      }
-    }
-
-    try {
-      await axios.post("/posts", newPost);
-    } catch (err) {
-      console.log(err);
+  const onImageChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      console.log(e.target.files[0], "image check in files");
+      setUploadedImage(e.target.files[0]);
     }
   };
+  // console.log(uploadedImage, "uploaded img check");
 
   const handleImageCancel = () => {
-    setFile(null);
-    setImageURL(null);
+    setUploadedImage(null);
   };
+
+  // To reset the share component after posting
+
+  const resetShare = () => {
+    setUploadedImage(null);
+    setDescription("");
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    // const newPost = {
+    //   owner: user._id,
+    //   description: description,
+    // };
+
+    const data = new FormData();
+
+    data.append("name", uploadedImage.name);
+    data.append("owner", user._id);
+    data.append("description", description);
+    if (uploadedImage) {
+      data.append("file", uploadedImage);
+      console.log(data.get("file"), "file check");
+      console.log(data, "data check");
+
+      // newPost.image = fileName;
+
+      // console.log(newPost, "=========new post details========");
+
+      const config = {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      };
+      dispatch(createPost({ data, axiosPrivate, config })).then(() => {
+        dispatch(fetchPosts({ userId: user._id, axiosPrivate }));
+      });
+      resetShare();
+    }
+    else{
+      dispatch(createPost({ data, axiosPrivate, config })).then(() => {
+        dispatch(fetchPosts({ userId: user._id, axiosPrivate }));
+      });
+      resetShare();
+    }
+  };
+  // todo delete this if the bottom one is success
+
   return (
     <Box
       className="share"
@@ -77,12 +102,12 @@ const Share = () => {
         component="form"
         className="shareWrapper"
         padding={1}
-        onSubmit={submitHandler}
+        // onSubmit={submitHandler}
       >
         <Box className="shareTop" display={"flex"} alignItems={"center"}>
           <Avatar
-            alt="Remy Sharp"
-            src="/static/images/avatar/1.jpg"
+            alt="user Profile pic"
+            src={noAvatarImage}
             sx={{ marginRight: "10px" }}
           />
           <InputBase
@@ -91,16 +116,17 @@ const Share = () => {
             placeholder={`What's happening ${user.firstName} ??`}
             sx={{ width: "80%" }}
             onChange={(e) => setDescription(e.target.value)}
+            value={description}
           />
         </Box>
         <hr className="shareHr" />
-        {file && (
+        {uploadedImage && (
           <Box
             className="shareImageContainer"
             sx={{ padding: "0 20px 10px 20px", position: "relative" }}
           >
             <img
-              src={imageURL}
+              src={URL.createObjectURL(uploadedImage)}
               alt="shareImage"
               className="shareImage"
               style={{ width: "100%", objectFit: "cover" }}
@@ -133,7 +159,11 @@ const Share = () => {
               marginLeft={3}
               sx={{ cursor: "pointer" }}
             >
-              <InsertPhotoIcon className="shareIcon" sx={{ color: "red" }} />
+              <InsertPhotoIcon
+                className="shareIcon"
+                sx={{ color: "red" }}
+                onClick={() => imageRef.current.click()}
+              />
               <label htmlFor="image">
                 <span className="shareOptionText" style={{ cursor: "pointer" }}>
                   Photo{" "}
@@ -142,9 +172,12 @@ const Share = () => {
               <input
                 style={{ display: "none" }}
                 type="file"
+                name="image"
+                key={Date.now()}
+                ref={imageRef}
                 id="image"
                 accept=".png,.jpeg,.jpg"
-                onChange={(e) => setFile(e.target.files[0])}
+                onChange={onImageChange}
               />
             </Box>
             <Box
@@ -181,6 +214,7 @@ const Share = () => {
                 backgroundColor: "#75E6DA",
               },
             }}
+            onClick={handleSubmit}
           >
             Share
           </Button>

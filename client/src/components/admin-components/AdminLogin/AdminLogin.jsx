@@ -11,14 +11,22 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
 import "./adminLogin.css";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { showToast } from "../../../helpers/ToastHelper";
 import axios from "../../../utils/axios";
+import { useDispatch, useSelector } from "react-redux";
+import { selectAllStatus, updateUser } from "../../../Redux/slices/userSlice";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
+  const dispatch=useDispatch()
+  const location = useLocation();
+
+  const from = location.state?.from?.pathname || "/admin";
+
+  const loading=useSelector(selectAllStatus)
 
   const form = useForm({
     defaultValues: {
@@ -32,19 +40,21 @@ const AdminLogin = () => {
   const onSubmit = async (data, event) => {
     event.preventDefault();
     console.log(data);
-    try {
-      let response = await axios.post("/adminAuth/login", data, {
-        headers: { "Content-Type": "application/json" },
+    
+
+    dispatch(updateUser({data,role:'adminAuth'}))
+      .unwrap()
+      .then((response) => {
+        if (response) {
+          console.log(response,"response after login");
+          navigate(from, { replace: true });
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+        const errorMessage = error.message;
+        showToast(errorMessage, "error");
       });
-      console.log(response);
-      const successMessage = response.data.message;
-      showToast(successMessage, "success");
-      navigate("/admin");
-    } catch (error) {
-      console.log(error);
-      const errorMessage = error.response.data.error;
-      showToast(errorMessage, "error");
-    }
   };
   return (
     <>
@@ -95,7 +105,7 @@ const AdminLogin = () => {
               <Typography component="h1" variant="h6">
                 Sign in for Admin Operations
               </Typography>
-              <Box component="form" noValidate sx={{ mt: 1 }}>
+              <Box  noValidate sx={{ mt: 1 }}>
                 <TextField
                   margin="normal"
                   required

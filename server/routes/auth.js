@@ -1,34 +1,32 @@
-const { getUserRegistration, postUserRegistration, getUserLogin, postUserLogin, userLogout } = require("../controllers/auth-controller");
-const { authorization } = require("../middlewares/auth");
+import { Router } from 'express';
+import {
+  getUserRegistration,
+  postUserRegistration,
+  getUserLogin,
+  postUserLogin,
+  userLogout,
+} from '../controllers/auth-controller.js';
+import { authorization } from '../middlewares/auth.js';
 
-const router = require("express").Router();
-
-
+const router = Router();
 
 // USER REGISTER
-
-router.get("/register", getUserRegistration);
-
-router.post("/register", postUserRegistration);
+router.route('/register').get(getUserRegistration).post(postUserRegistration);
 
 // USER LOGIN
-
-router.get("/login", getUserLogin);
-
-router.post("/login", postUserLogin);
+router.route('/login').get(getUserLogin).post(postUserLogin);
 
 // USER LOGOUT
+router.get('/logout', userLogout);
 
-router.get("/logout",userLogout)
+// Todo: This is a test route, delete when hosting
+router.get('/test', authorization, (req, res) => {
+  console.log(req.userId, req.email);
+  const user = {
+    id: req.userId,
+    email: req.email,
+  };
+  res.status(200).json({ user, message: 'Test Success' });
+});
 
-
-router.get("/test",authorization,(req,res)=>{
-    console.log(req.userId,req.email);
-    const user={
-        id:req.userId,
-        email:req.email
-    }
-    res.status(200).json({user,message:"Test Success"})
-})
-
-module.exports = router;
+export default router;

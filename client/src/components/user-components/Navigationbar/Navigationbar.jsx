@@ -58,11 +58,13 @@ const UserBox = styled(Box)(({ theme }) => ({
 const Navigationbar = () => {
   const dispatch = useDispatch();
 
+  const PF = import.meta.env.VITE_APP_PUBLIC_FOLDER;
+
   // TODO: WRITE CODE : handle the logout here
   const handleLogout = () => {};
 
   const user = useSelector(selectAllUsers);
-  console.log(user, "user");
+  // console.log(user, "user");
   const [openMenu, setOpenMenu] = useState(false);
 
   return (
@@ -93,9 +95,11 @@ const Navigationbar = () => {
             <InputBase placeholder="Search..." />
           </Search>
           <Icons>
-            <IconButton sx={{ color: "white" }}>
-              <HomeIcon />
-            </IconButton>
+            <Link to={"/"} style={{ textDecoration: "none" }}>
+              <IconButton sx={{ color: "white" }}>
+                <HomeIcon />
+              </IconButton>
+            </Link>
             <IconButton sx={{ color: "white" }}>
               <PersonIcon />
             </IconButton>

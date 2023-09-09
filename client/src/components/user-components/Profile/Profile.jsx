@@ -1,7 +1,6 @@
 import { Box, Button, Grid, TextField, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import axios from "../../../utils/axios";
-
+import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 
 import "./profile.css";
 import Feed from "../Feed/Feed";
@@ -10,23 +9,48 @@ import Post from "../Feed/Post/Post";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 
-import { selectAllUsers } from "../../../Redux/slices/userSlice";
+import {
+  selectAllUsers,
+  updateFollow,
+  updateUnfollow,
+} from "../../../Redux/slices/userSlice";
+import { getAllPosts } from "../../../Redux/slices/postSlice";
 
 const Profile = () => {
+  const dispatch = useDispatch();
+
+  const axiosPrivate = useAxiosPrivate();
   const [postOwner, setPostOwner] = useState({});
   const user = useSelector(selectAllUsers);
+  const posts = useSelector(getAllPosts);
   const userId = useParams().userId;
-  // console.log(userId, "params");
+
+  const [userPostsLength, setUserPostsLength] = useState();
+
+  useEffect(() => {
+    const userPosts = posts.filter((post) => post.owner._id === userId);
+    // console.log(userPosts.length,"userpost length");
+    setUserPostsLength(userPosts.length);
+  }, [posts, userId]);
+
   const [followed, setFollowed] = useState(user.following.includes(userId));
+
+  const PF = import.meta.env.VITE_APP_PUBLIC_FOLDER;
 
   useEffect(() => {
     setFollowed(user.following.includes(userId));
   }, [user, userId]);
 
+  const [followersLength, setFollowersLength] = useState(null);
+  const [followingLength, setFollowingLength] = useState(null);
+
   useEffect(() => {
     const fetchUser = async () => {
-      const response = await axios.get(`/users/${userId}`);
-      console.log(response.data, "User details of post");
+      const response = await axiosPrivate.get(`/users/${userId}`);
+      // console.log(response.data, "User details of post");
+      
+      setFollowersLength(response.data.followers.length)
+      setFollowingLength(response.data.following.length)
       setPostOwner(response.data);
     };
     fetchUser();
@@ -35,9 +59,11 @@ const Profile = () => {
   const handleFollow = async () => {
     try {
       if (followed) {
-        await axios.put(`/${userId}/unfollow`, { userId: user._id });
+        await axiosPrivate.put(`/users/${userId}/unfollow`);
+        dispatch(updateUnfollow(userId));
       } else {
-        await axios.put(`/${userId}/follow`, { userId: user._id });
+        await axiosPrivate.put(`/users/${userId}/follow`);
+        dispatch(updateFollow(userId));
       }
     } catch (err) {
       console.log(err);
@@ -98,18 +124,21 @@ const Profile = () => {
             marginBottom={2}
             bgcolor={"#D4F1F4"}
           >
-            <Typography fontWeight={500}>10 Followers</Typography>
-            <Typography fontWeight={500}>10 Following</Typography>
-            <Typography fontWeight={500}>10 Posts</Typography>
+            <Typography fontWeight={500}>
+              {followersLength} Followers
+            </Typography>
+            <Typography fontWeight={500}>
+              {followingLength} Following
+            </Typography>
+            <Typography fontWeight={500}>{userPostsLength} Posts</Typography>
             {user._id === userId ? (
               <Button color="error">Delete Profile</Button>
-            ) : followed ? (
-              <Button color="error" onClick={handleFollow}>
-                Unfollow
-              </Button>
             ) : (
-              <Button color="success" onClick={handleFollow}>
-                Follow
+              <Button
+                color={followed ? "error" : "success"}
+                onClick={handleFollow}
+              >
+                {followed ? "Unfollow" : "Follow"}
               </Button>
             )}
           </Box>

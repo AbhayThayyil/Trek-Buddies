@@ -8,6 +8,9 @@ import { selectAllUsers } from "../../../Redux/slices/userSlice";
 
 const MiniProfile = () => {
   const user = useSelector(selectAllUsers)
+
+  const PF = import.meta.env.VITE_APP_PUBLIC_FOLDER;
+  
   return (
     <>
       <Box

@@ -1,6 +1,7 @@
-const { whitelist } = require("./allowedOrigins");
+import { whitelist } from "./allowedOrigins.js";
 
-const corsOptions = {
+
+export const corsOptions = {
   origin: (origin, callback) => {
     if (whitelist.indexOf(origin) !== -1 || !origin) {
       callback(null, true);
@@ -11,4 +12,3 @@ const corsOptions = {
   optionSuccessStatus: 200,
 };
 
-module.exports = corsOptions;

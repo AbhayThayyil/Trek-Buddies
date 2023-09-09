@@ -9,6 +9,7 @@ import Homepage from "./pages/user-pages/Homepage/Homepage";
 // import OtpSignupPage from "./pages/user-pages/OtpSignupPage/OtpSignupPage";
 import AdminLoginPage from "./pages/admin-pages/Admin-login/AdminLoginPage";
 import AdminDashboardPage from "./pages/admin-pages/Admin-Dashboard page/AdminDashboardPage";
+import UserListPage from "./pages/admin-pages/UserListPage/UserListPage";
 import Missing from "./components/user-components/404/404";
 
 // authentication for protected route
@@ -16,6 +17,11 @@ import RequireAuth from "./components/RequireAuth";
 import Users from "./components/Users";
 import ProfilePage from "./pages/user-pages/ProfilePage/ProfilePage";
 import Layout from "./components/Layout";
+import TripPage from "./pages/user-pages/TripPage/TripPage";
+import AdminLayout from "./pages/admin-pages/adminLayout";
+import PostsListPage from "./pages/admin-pages/PostsListPage/PostsListPage";
+import ReportsListPage from "./pages/admin-pages/ReportsListPage/ReportsListPage";
+import PersistLogin from "./components/user-components/PersistLogin";
 
 function App() {
   return (
@@ -28,9 +34,12 @@ function App() {
             <Route path="/signup" element={<Signup />} />
 
             {/* PROTECTED ROUTES */}
-            <Route element={<RequireAuth />}>
-              <Route path="/" element={<Homepage />} />
-              <Route path="/listUsers" element={<Users />} />
+            <Route element={<PersistLogin />}>
+              <Route element={<RequireAuth />}>
+                <Route path="/" element={<Homepage />} />
+                <Route path="/listUsers" element={<Users />} />
+                <Route path="/trip" element={<TripPage />} />
+              </Route>
             </Route>
 
             <Route path="/profile/:userId" element={<ProfilePage />} />
@@ -38,7 +47,17 @@ function App() {
 
             {/* ADMIN ROUTES */}
             <Route path="/admin/login" element={<AdminLoginPage />} />
-            <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route element={<RequireAuth isAdmin={true} />}>
+              <Route element={<AdminLayout />}>
+                <Route path="/admin" element={<AdminDashboardPage />} />
+                <Route path="/admin/userList" element={<UserListPage />} />
+                <Route path="/admin/postsList" element={<PostsListPage />} />
+                <Route
+                  path="/admin/reportsList"
+                  element={<ReportsListPage />}
+                />
+              </Route>
+            </Route>
 
             <Route path="*" element={<Missing />} />
           </Route>

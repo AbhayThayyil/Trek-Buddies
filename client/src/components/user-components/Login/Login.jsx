@@ -28,6 +28,7 @@ import {
 
 const Login = () => {
   const dispatch = useDispatch();
+  const loading=useSelector(selectAllStatus)
 
   const form = useForm({
     defaultValues: {
@@ -42,13 +43,13 @@ const Login = () => {
   const location = useLocation();
   const from = location.state?.from?.pathname || "/";
 
-  console.log(from, "from location");
+  // console.log(from, "from location");
 
   const onSubmit = async (data, event) => {
     event.preventDefault();
-    // console.log(data, "onsubmit data");
+    console.log(data, "onsubmit data");
 
-    dispatch(updateUser(data))
+    dispatch(updateUser({data,role:'auth'}))
       .unwrap()
       .then((response) => {
         if (response) {
@@ -165,6 +166,7 @@ const Login = () => {
                   variant="contained"
                   sx={{ mt: 3, mb: 2 }}
                   onClick={handleSubmit(onSubmit)}
+                  disabled={loading==='loading'?true:false}
                 >
                   Sign In
                 </Button>
