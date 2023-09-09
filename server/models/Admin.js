@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 
 const AdminSchema = new mongoose.Schema({
   email: {
@@ -10,8 +10,14 @@ const AdminSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please enter the password"],
   },
+  isAdmin: {
+    type: Boolean,
+  },
+  refreshToken: {
+    type: String,
+    default: "",
+  },
 });
 
 const Admin = mongoose.model("Admin", AdminSchema);
-
-module.exports = Admin;
+export default Admin;

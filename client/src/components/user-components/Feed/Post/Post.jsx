@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import TimeAgo from "timeago-react";
-import axios from "../../../../utils/axios";
+import useAxiosPrivate from "../../../../hooks/useAxiosPrivate";
 
 import {
   Avatar,
@@ -23,50 +23,131 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import CommentOutlinedIcon from "@mui/icons-material/CommentOutlined";
+import SendIcon from "@mui/icons-material/Send";
 import Comments from "./Comments/Comments";
 import { useTheme } from "@emotion/react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
+import { fetchUser, selectAllUsers } from "../../../../Redux/slices/userSlice";
+import {
+  createComment,
+  deletePost,
+  handleLike,
+  reportPost,
+} from "../../../../Redux/slices/postSlice";
+import ConfirmDelete from "../../DialogComponents/confirmDelete";
 
-const Post = ({ post }) => {
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { showToast } from "../../../../helpers/ToastHelper";
+import UpdatePost from "./UpdatePost/UpdatePost";
+import ReportPost from "./ReportPost/ReportPost";
+
+// const development=import.meta.env.VITE_APP_DEVELOPMENT==='true'  // todo : To save s3 calls.Change on production
+
+const Post = ({ post, development }) => {
+  const axiosPrivate = useAxiosPrivate();
+  const dispatch = useDispatch();
+
   const [like, setLike] = useState(post?.likes?.length);
   const [isLiked, setIsLiked] = useState(false);
-  const [comments,setComments]=useState(post?.comments)
+  const [commentText, setCommentText] = useState("");
+  const [comments, setComments] = useState();
   const [viewComments, setViewComments] = useState(false);
   const [postSettings, setPostSettings] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
-  const [postOwner, setPostOwner] = useState();
 
-  const user = useSelector((state) => state.user);
-  console.log(post, "post details passed ");
-  console.log(comments,"comments list");
+  // To edit a post
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const handleEditPostClick = () => {
+    setShowEditDialog(true);
+  };
+  const handleEditPostCancel = () => {
+    setShowEditDialog(false);
+    setPostSettings(false);
+  };
+  const handeleEditPostConfirm = () => {
+    // todo write update post dispatch code here
+
+    setShowEditDialog(false);
+    setPostSettings(false);
+    showToast("Updated the post successfully");
+  };
+
+  // To report a Post
+  const [showReportPostDialog, setShowReportPostDialog] = useState(false);
+  const handleReportPostClick = () => {
+    setShowReportPostDialog(true);
+  };
+
+  const handleReportPostConfirm = (reportReasonText) => {
+    
+    // console.log(reportObject,"updated chk in confirm");
+    dispatch(reportPost({axiosPrivate,reportReasonText,postId:post._id}))
+    //todo write dispatch for report post
+
+    setShowReportPostDialog(false);
+    setPostSettings(false);
+    showToast("Reported successfully !");
+  };
+
+  const handleReportPostCancel = () => {
+    setShowReportPostDialog(false);
+    setPostSettings(false);
+  };
+
+  // To delete a Post
+  const [showDeletePostConfirm, setShowDeletePostConfirm] = useState(false);
+  const handleDeletePostClick = () => {
+    setShowDeletePostConfirm(true);
+  };
+
+  const handleDeletePostConfirm = () => {
+    dispatch(deletePost({ axiosPrivate, postId: post._id }));
+
+    setShowDeletePostConfirm(false);
+    setPostSettings(false);
+    showToast("Deleted the post successfully");
+  };
+
+  const handleDeletePostCancel = () => {
+    setShowDeletePostConfirm(false);
+    setPostSettings(false);
+  };
+
+  const PF = import.meta.env.VITE_APP_PUBLIC_FOLDER;
+
+  const user = useSelector(selectAllUsers);
+
+  useEffect(() => {
+    const sortedComments = [...post?.comments].sort(
+      (a, b) => new Date(b.updatedAt) - new Date(a.updatedAt)
+    );
+    setComments(sortedComments);
+  }, [post.comments]);
+
+  // console.log(user,"user data ");
+  // console.log(post, "post details passed ");
+  // console.log(comments, "comments list");
 
   useEffect(() => {
     setIsLiked(post.likes.includes(user._id));
   }, [user._id, post.likes]);
 
+  // Optimize the effect by memoizing the dispatch function
+  const fetchUserData = useCallback(() => {
+    dispatch(fetchUser({ post, axiosPrivate }));
+  }, [dispatch]);
+
   useEffect(() => {
-    const fetchUser = async () => {
-      const response = await axios.get(`users/${post?.owner?._id}`);
-      console.log(response.data, "User details of post");
-      setPostOwner(response.data);
-    };
-    fetchUser();
-  }, [post?.owner?._id]);
+    fetchUserData();
+  }, [fetchUserData]);
 
   const likeHandler = () => {
-    const handleLike=async()=>{
-      try {
-        const response=await axios.put(`/posts/${post?._id}/like`, { owner: user._id });
-        console.log(response,"like response");
-      } catch (err) {
-        console.log(err, "like error ");
-      }
-    }
-    handleLike()
-    
+    dispatch(handleLike({ post, user, axiosPrivate }));
+
     setLike(isLiked ? like - 1 : like + 1);
-    setIsLiked((prevLiked)=>!prevLiked);
+    setIsLiked((prevLiked) => !prevLiked);
   };
 
   const handlePostSettingsOpen = (e) => {
@@ -74,8 +155,16 @@ const Post = ({ post }) => {
     setAnchorEl(e.currentTarget);
   };
 
+  const handleComment = (e) => {
+    e.preventDefault;
+    // console.log("comment is :", commentText);
+    dispatch(createComment({ commentText, post, axiosPrivate }));
+    setCommentText("");
+  };
+
   return (
     <>
+      <ToastContainer />
       <Card
         sx={{
           margin: 5,
@@ -89,8 +178,12 @@ const Post = ({ post }) => {
         {/* // todo: FIX THE LINKS */}
         <CardHeader
           avatar={
-            <Link to={`/profile/${postOwner?._id}`} >
-              <Avatar sx={{ bgcolor: "red[500]" }} aria-label="recipe" src="" />
+            <Link to={`/profile/${post?.owner?._id}`}>
+              <Avatar
+                sx={{ bgcolor: "red[500]" }}
+                aria-label="recipe"
+                src={post?.owner?.profilePicture || PF + "Images/noAvatar.jpg"}
+              />
             </Link>
           }
           action={
@@ -112,20 +205,45 @@ const Post = ({ post }) => {
                   "aria-labelledby": "basic-button",
                 }}
               >
-                <MenuItem>Edit</MenuItem>
-                <MenuItem>Delete</MenuItem>
-                <MenuItem>Report</MenuItem>
+                {post?.owner?._id === user._id ? (
+                  <Box key={post._id}>
+                    <MenuItem onClick={handleEditPostClick}>Edit</MenuItem>
+                    <UpdatePost
+                      open={showEditDialog}
+                      handleClose={handleEditPostCancel}
+                      handleConfirm={handeleEditPostConfirm}
+                      postId={post._id}
+                    />
+                    <MenuItem onClick={handleDeletePostClick}>Delete</MenuItem>
+                    <ConfirmDelete
+                      open={showDeletePostConfirm}
+                      handleClose={handleDeletePostCancel}
+                      handleConfirm={handleDeletePostConfirm}
+                      description="Are you sure you want to delete this post ? Once deleted,it can't be recovered "
+                    />
+                  </Box>
+                ) : (
+                  <Box key={post._id}>
+                    <MenuItem onClick={handleReportPostClick}>Report</MenuItem>
+                    <ReportPost
+                      open={showReportPostDialog}
+                      handleClose={handleReportPostCancel}
+                      handleConfirm={handleReportPostConfirm}
+                      postId={post._id}
+                    />
+                  </Box>
+                )}
               </Menu>
             </>
           }
           //  todo: fix all links
           title={
             <Link
-              to={`/profile/${postOwner?._id}`}
+              to={`/profile/${post?.owner?._id}`}
               style={{ textDecoration: "none", color: "black" }}
             >
               <Typography sx={{ fontWeight: "700" }}>
-                {postOwner?.firstName + " " + postOwner?.lastName}
+                {post?.owner?.firstName + " " + post?.owner?.lastName}
               </Typography>
             </Link>
           }
@@ -135,15 +253,17 @@ const Post = ({ post }) => {
             </>
           }
         />
+
         <Box paddingLeft={1} paddingRight={1}>
           <CardMedia
             component="img"
-            height="194"
-            image="https://images.unsplash.com/photo-1532274402911-5a369e4c4bb5?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=870&q=80"
+            height="250"
+            image={development ? "Images/coverPic.avif" : post?.imageURL}
             alt="Paella dish"
             // maxWidth={"100%"}
 
             // style={{paddingLeft:'10px',paddingRight:'10px'}}
+            sx={{ objectFit: "contain" }}
           />
         </Box>
         <CardContent>
@@ -169,9 +289,39 @@ const Post = ({ post }) => {
           </IconButton>
           <Typography> {post?.comments?.length} Comments</Typography>
         </CardActions>
-        {viewComments && (comments.map((comment)=>(
-          <Comments key={comment.userId} comment={comment}/>
-        )))}
+
+        {viewComments && (
+          <>
+            <Box
+              className="user-comment-container"
+              display={"flex"}
+              justifyContent={"space-evenly"}
+              alignItems={"center"}
+              padding={2}
+              gap={2}
+            >
+              <Avatar />
+              <TextField
+                placeholder="Add a comment..."
+                name="comment"
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+              />
+              <IconButton onClick={handleComment} type="submit">
+                <SendIcon
+                  sx={{
+                    color: "#189AB4",
+                  }}
+                />
+              </IconButton>
+            </Box>
+          </>
+        )}
+
+        {viewComments &&
+          comments.map((comment) => (
+            <Comments key={comment._id} comment={comment} post={post._id} />
+          ))}
       </Card>
     </>
   );

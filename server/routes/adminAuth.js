@@ -1,14 +1,10 @@
-const router = require("express").Router();
-const {
-  getAdminLogin,
-  postAdminLogin,
-} = require("../controllers/auth-controller");
-const Admin = require("../models/Admin");
+import { Router } from 'express';
+import { getAdminLogin, postAdminLogin } from '../controllers/auth-controller.js';
+import Admin from '../models/Admin.js';
+
+const router = Router();
 
 // ADMIN LOGIN
+router.route('/login').get(getAdminLogin).post(postAdminLogin);
 
-router.get("/login", getAdminLogin);
-
-router.post("/login", postAdminLogin);
-
-module.exports = router;
+export default router;

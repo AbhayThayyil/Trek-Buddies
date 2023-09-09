@@ -1,40 +1,40 @@
-const router = require("express").Router();
-const {
+import { Router } from "express";
+import {
   updateUser,
   deleteUser,
   getSingleUserData,
   followUser,
   unfollowUser,
   listUser,
-  getFriends,
   getAllUsers,
-} = require("../controllers/user-controller");
-const User = require("../models/User");
-const {authorization} =require("../middlewares/auth")
+  getFriendsData,
+} from "../controllers/user-controller.js";
+import User from "../models/User.js";
+import { authorization } from "../middlewares/auth.js";
+
+const router = Router();
 
 router.get("/", getAllUsers);
 
+// Get a user
+router.get("/:id", authorization, getSingleUserData);
+
 // Update a user
-router.put("/:id", updateUser);
+router.put("/update", authorization, updateUser);
 
 // Delete a user
-router.delete("/:id", deleteUser);
-
-// Get a user
-router.get("/:id", getSingleUserData);
+router.delete("/delete", authorization, deleteUser);
 
 // Follow a user
-router.put("/:id/follow",authorization,followUser)
+router.put("/:id/follow", authorization, followUser);
 
 // Unfollow a user
-router.put("/:id/unfollow",unfollowUser)
+router.put("/:id/unfollow", authorization, unfollowUser);
 
-router.get("/friends/:userId",getFriends)
+// to get a friend's data
+router.get("/friends/", getFriendsData);
 
+// TEST - List Users
+router.get("/test/listUsers", authorization, listUser);
 
-
-//TEST- List Users
-
-router.get("/test/listUsers",authorization,listUser)
-
-module.exports = router;
+export default router;

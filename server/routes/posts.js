@@ -1,34 +1,52 @@
-const router = require("express").Router();
-const { createPost, updatePost, deletePost, likePost, getSinglePost, getTimelinePosts, reportPost, commentOnPost, deleteComment, getUserPosts } = require("../controllers/post-controller");
-const Post = require("../models/Post");
+import { Router } from 'express';
+import {
+  createPost,
+  updatePost,
+  deletePost,
+  likePost,
+  getSinglePost,
+  getTimelinePosts,
+  reportPost,
+  commentOnPost,
+  deleteComment,
+  getUserPosts,
+  editComment,
+} from '../controllers/post-controller.js';
+import { authorization } from '../middlewares/auth.js';
+import upload from '../config/multer.js';
 
-//Create a post
-router.post("/", createPost);
 
-//Update a post
-router.put("/:id", updatePost);
+const router = Router();
 
-//Delete a post
-router.delete("/:id", deletePost);
+// Create a post
+router.post('/', authorization, upload.single('file'), createPost);
 
-//Like and Dislike a post
-router.put("/:id/like",likePost)
+// Get a post, Update a post, Delete a post
+router
+  .route('/:postId')
+  .get(authorization,getSinglePost)
+  .put(authorization,updatePost)
+  .delete(authorization,deletePost);
 
-//Comment on a post
-router.put("/:id/comment",commentOnPost)
+// Like and Dislike a post
+router.put('/:postId/like', authorization, likePost);
 
-//Delete a comment
-router.put("/:id/deleteComment/:commentId",deleteComment)
+// Comment on a post
+router.put('/:postId/comment', authorization, commentOnPost);
 
-//Report a post
-router.put("/:id/report",reportPost)
+// Edit a comment
 
-//Get a post
-router.get("/:id",getSinglePost)
+router.patch('/:postId/editComment/:commentId',authorization,editComment)
 
-//Get timeline posts - fetch posts of self and friends 
-router.get("/timeline/:userId",getTimelinePosts)
+// Delete a comment
+router.put('/:postId/deleteComment/:commentId', authorization, deleteComment);
 
-router.get("/profile/:userId",getUserPosts)
+// Report a post
+router.put('/:postId/report', authorization, reportPost);
 
-module.exports = router;
+// Get timeline posts - fetch posts of self and friends
+router.get('/timeline/all', authorization, getTimelinePosts);
+
+router.get('/profile/:userId', authorization, getUserPosts);
+
+export default router;
