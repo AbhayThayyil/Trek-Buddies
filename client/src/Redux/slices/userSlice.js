@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import authService from "../../hooks/authService";
-import { axiosPrivate } from "../../utils/axios";
+import axios, { axiosPrivate } from "../../utils/axios";
 
 const initialState = {
   userInfo: {
@@ -35,6 +35,8 @@ export const fetchUser = createAsyncThunk(
     }
   }
 );
+
+
 
 const userSlice = createSlice({
   name: "user",

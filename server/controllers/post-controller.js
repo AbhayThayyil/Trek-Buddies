@@ -318,6 +318,8 @@ export const reportPost = async (req, res) => {
           userId: req.userId,
           reportReason: req.body.reportReasonText,
           reportId: uuid,
+          postId: postToReport._id,
+          reportedUserId: postToReport.owner,
         };
         console.log(reportObject, "report obj chk");
         await postToReport.updateOne({
@@ -392,9 +394,9 @@ export const commentOnPost = async (req, res) => {
 
 // Edit a comment on a post
 
-export const editComment=async(req,res)=>{
-  console.log(req.body,"check the body ");
-  try{
+export const editComment = async (req, res) => {
+  console.log(req.body, "check the body ");
+  try {
     const post = await Post.findById(req.params.postId);
     console.log(post, "post");
     if (!post) {
@@ -412,11 +414,14 @@ export const editComment=async(req,res)=>{
         .json({ error: "You are not authorized to edit this comment" });
     }
 
+    comment.comment = req.body.comment;
 
-
-
-  }
-  catch(err){
+    const savedPost = await post.save();
+    return res.status(200).json({
+      success: "Comment updated",
+      comment: savedPost.comments.id(req.params.commentId),
+    });
+  } catch (err) {
     res.status(500).json(err);
   }
 };

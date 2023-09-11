@@ -78,6 +78,14 @@ const PostSchema = new mongoose.Schema(
           reportId: {
             type: String,
           },
+          postId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Post",
+          },
+          reportedUserId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+          },
         },
       ],
       default: [],

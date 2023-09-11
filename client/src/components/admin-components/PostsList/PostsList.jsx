@@ -1,4 +1,4 @@
-import { Typography } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import Box from "@mui/material/Box";
 import { DataGrid } from "@mui/x-data-grid";
 
@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { useDispatch, useSelector } from "react-redux";
 import { adminGetAllPosts, getPosts } from "../../../Redux/slices/adminSlice";
+import PostModalAdmin from "./PostModalAdmin/PostModalAdmin";
 
 const PostsList = () => {
   const axiosPrivate = useAxiosPrivate();
@@ -17,6 +18,21 @@ const PostsList = () => {
   useEffect(() => {
     dispatch(getPosts({ axiosPrivate }));
   }, [dispatch, axiosPrivate]);
+
+  // To open MODAL to VIEW the POST
+  const [postDialogOpen, setPostDialogOpen] = useState(false);
+  const [selectedPostId, setSelectedPostId] = useState("");
+
+  const handlePostDialogClick = (postId) => {
+    // console.log(postId, "postid click check");
+    setPostDialogOpen(true);
+    setSelectedPostId(postId);
+  };
+
+  const handlePostDialogCancel = () => {
+    setPostDialogOpen(false);
+    
+  };
 
   const columns = [
     { field: "id", headerName: "ID", width: 90 },
@@ -47,6 +63,29 @@ const PostsList = () => {
       sortable: true,
       width: 160,
       valueGetter: ({ value }) => value && new Date(value),
+    },
+    {
+      field: "operations",
+      headerName: "Operations",
+      width: 160,
+      renderCell: (params) => {
+        return (
+          <>
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ margin: "5px" }}
+              onClick={() => handlePostDialogClick(params.row.postId)}
+            >
+              View{" "}
+            </Button>
+            <PostModalAdmin open={postDialogOpen} close={handlePostDialogCancel} postId={selectedPostId} />
+            <Button variant="contained" color="error" sx={{ margin: "5px" }}>
+              Remove{" "}
+            </Button>
+          </>
+        );
+      },
     },
   ];
 

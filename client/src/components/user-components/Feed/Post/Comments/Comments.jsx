@@ -58,12 +58,11 @@ const Comments = ({ comment, post }) => {
         postId: post,
         editedCommentText,
       })
-    ).then(() => {
-      showToast("Comment edited");
+    );
+    showToast("Comment edited");
 
-      setShowEditDialog(false);
-      setCommentSettings(false);
-    });
+    setShowEditDialog(false);
+    setCommentSettings(false);
   };
 
   const handleEditCancel = () => {
@@ -113,7 +112,7 @@ const Comments = ({ comment, post }) => {
             </Typography>
             <Typography component={"span"} marginLeft={2} color={"grey"}>
               {" "}
-              <TimeAgo datetime={comment?.createdAt} />
+              <TimeAgo datetime={comment?.updatedAt} />
             </Typography>
             <Typography
               component={"p"}

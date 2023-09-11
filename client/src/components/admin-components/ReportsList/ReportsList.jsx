@@ -1,10 +1,30 @@
 import { Typography } from "@mui/material";
 import Box from "@mui/material/Box";
 import { DataGrid } from "@mui/x-data-grid";
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
+import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  adminGetAllPosts,
+  adminGetAllReports,
+  adminGetAllUsers,
+  getReports,
+} from "../../../Redux/slices/adminSlice";
 
 const ReportsList = () => {
-  const [reports,setReports]=useState([])
+  const reports = useSelector(adminGetAllReports);
+  const axiosPrivate = useAxiosPrivate();
+
+  const dispatch = useDispatch();
+
+  const users = useSelector(adminGetAllUsers);
+
+  const posts = useSelector(adminGetAllPosts);
+
+  useEffect(() => {
+    dispatch(getReports({ axiosPrivate }));
+  }, [dispatch, axiosPrivate]);
+
   const columns = [
     { field: "id", headerName: "ID", width: 90 },
     {
@@ -34,7 +54,13 @@ const ReportsList = () => {
     },
   ];
 
-  const rows = [{ id: 1, lastName: "Snow", firstName: "Jon", age: 35 }];
+  const rows = reports.map((report, index) => ({
+    id: index + 1,
+    reporter: report.userId,
+    reportee: report.reportedUserId,
+    postId: report.postId,
+    reason: report.reportReason,
+  }));
 
   return (
     <>

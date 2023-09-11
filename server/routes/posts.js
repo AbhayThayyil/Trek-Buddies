@@ -11,6 +11,7 @@ import {
   deleteComment,
   getUserPosts,
   editComment,
+  
 } from '../controllers/post-controller.js';
 import { authorization } from '../middlewares/auth.js';
 import upload from '../config/multer.js';
@@ -48,5 +49,7 @@ router.put('/:postId/report', authorization, reportPost);
 router.get('/timeline/all', authorization, getTimelinePosts);
 
 router.get('/profile/:userId', authorization, getUserPosts);
+
+
 
 export default router;

@@ -65,6 +65,12 @@ export const postUserLogin = async (req, res) => {
     console.log(req.body, "passed from frontend");
     const foundUser = await User.findOne({ email });
     if (foundUser) {
+      if (foundUser.blocked) {
+        return res
+          .status(401)
+          .json({ error: "Your account is blocked.Contact admin to fix" });
+      }
+
       // Exists,check password
       const passwordMatch = await bcrypt.compare(password, foundUser.password);
       if (passwordMatch) {
