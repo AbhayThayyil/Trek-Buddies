@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
@@ -20,14 +20,23 @@ const EditCommentDialog = ({
   const post = posts.find((post) => post._id === postId);
   const comment = post.comments.find((comment) => comment._id === commentId);
 
-  const textRef = useRef();
+  useEffect(() => {
+    if (comment) {
+      setEditedCommentText(comment.comment);
+    }
+  }, [comment]);
 
-  const [editedCommentText, setEditedCommentText] = useState(comment.comment);
+  const [editedCommentText, setEditedCommentText] = useState("");
 
-  const handleCommentTextChange=(e)=>{
-    e.preventDefault()
-    console.log(e.target.value,"value chk");
-    setEditedCommentText(e.target.value)
+  const handleCommentTextChange = (e) => {
+    // e.preventDefault();
+    console.log(e.target.value, "value chk");
+    setEditedCommentText(e.target.value);
+  };
+
+  const handleConfirmClick=()=>{
+    handleConfirm(editedCommentText)
+    handleClose()
   }
 
   return (
@@ -48,10 +57,8 @@ const EditCommentDialog = ({
           <Stack>
             <TextField
               name="comment"
-              ref={textRef}
               value={editedCommentText}
               onChange={handleCommentTextChange}
-              
             />
           </Stack>
         </DialogContent>
@@ -61,7 +68,7 @@ const EditCommentDialog = ({
           </Button>
           <Button
             color="success"
-            onClick={handleConfirm(editedCommentText)}
+            onClick={handleConfirmClick}
             autoFocus
           >
             Confirm

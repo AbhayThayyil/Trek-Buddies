@@ -106,11 +106,13 @@ export const editComment = createAsyncThunk(
   ) => {
     try {
       // console.log(commentId, postId,  "id checks");
-      console.log(editedCommentText,"edited comment chk");
+      console.log(editedCommentText, "edited comment chk");
       const response = await axiosPrivate.patch(
         `/posts/${postId}/editComment/${commentId}`,
-        {comment:editedCommentText}
+        { comment: editedCommentText }
       );
+      response.data.postId = postId;
+      response.data.commentId = commentId;
       console.log(response.data, "response after comment edit check");
       return response.data;
     } catch (err) {
@@ -225,6 +227,27 @@ const postSlice = createSlice({
         }
       })
       .addCase(createComment.rejected, (state, action) => {
+        state.status = "fail";
+        state.error = action.error.message;
+      })
+      .addCase(editComment.pending, (state, action) => {
+        state.status = "loading";
+      })
+      .addCase(editComment.fulfilled, (state, action) => {
+        console.log(action.payload, "payload to edit comment");
+        state.status = "success";
+        const { postId, commentId, comment } = action.payload;
+
+        const postIndex = state.posts.findIndex((post) => post._id === postId);
+        if (postIndex !== -1) {
+          const uniqueComment = state.posts[postIndex].comments.find(
+            (singleComment) => singleComment._id === commentId
+          );
+          console.log(current(uniqueComment), "comment found");
+          uniqueComment.comment = comment.comment;
+        }
+      })
+      .addCase(editComment.rejected, (state, action) => {
         state.status = "fail";
         state.error = action.error.message;
       })

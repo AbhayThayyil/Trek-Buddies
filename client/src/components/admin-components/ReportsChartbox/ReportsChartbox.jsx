@@ -1,10 +1,25 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import ReportIcon from '@mui/icons-material/Report';
 import { Box, Typography } from '@mui/material';
 import { Link } from 'react-router-dom';
+import useAxiosPrivate from '../../../hooks/useAxiosPrivate';
+import { useDispatch, useSelector } from 'react-redux';
+import { adminGetAllReports, getReports } from '../../../Redux/slices/adminSlice';
 
 
 const ReportsChartbox = () => {
+
+  const axiosPrivate = useAxiosPrivate();
+
+  const dispatch = useDispatch();
+
+  const reports = useSelector(adminGetAllReports);
+
+  useEffect(() => {
+    dispatch(getReports({ axiosPrivate }));
+  }, [dispatch, axiosPrivate]);
+
+
   return (
     <>
     <Box className="usersBox">
@@ -33,7 +48,7 @@ const ReportsChartbox = () => {
           }}
         >
           <Typography variant="h4" fontSize={50}>
-            3
+            {reports.length}
           </Typography>
           <Link to="/admin/reportsList" style={{ textDecoration: "none", paddingBottom: "20px" }}>
             View All

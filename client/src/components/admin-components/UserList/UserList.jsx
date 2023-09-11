@@ -1,17 +1,17 @@
-import { Typography } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import Box from "@mui/material/Box";
 import { DataGrid } from "@mui/x-data-grid";
 import { useEffect, useState } from "react";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
-import { adminGetAllUsers, getUsers } from "../../../Redux/slices/adminSlice";
+import { adminGetAllUsers, blockUser, getUsers } from "../../../Redux/slices/adminSlice";
 import { useDispatch, useSelector } from "react-redux";
 
 const UserList = () => {
-  const axiosPrivate=useAxiosPrivate()
+  const axiosPrivate = useAxiosPrivate();
 
-  const dispatch=useDispatch()
+  const dispatch = useDispatch();
 
-  const users=useSelector(adminGetAllUsers)
+  const users = useSelector(adminGetAllUsers);
 
   useEffect(() => {
     dispatch(getUsers({ axiosPrivate }));
@@ -55,18 +55,43 @@ const UserList = () => {
       sortable: "true",
       valueGetter: ({ value }) => value && new Date(value),
     },
+    {
+      field: "operations",
+      headerName: "Block Status",
+      width: 160,
+      renderCell: (params) => {
+        return params.row.blocked ? (
+          <Button variant="contained" color="primary" onClick={()=>handleBlock(params.row.email)}>
+            Unblock
+          </Button>
+        ) : (
+          <Button variant="contained" color="error" onClick={()=>handleBlock(params.row.email)}>
+            Block
+          </Button>
+        );
+      },
+    },
   ];
 
   // const rows = [{ id: 1, lastName: "Snow", firstName: "Jon", age: 35 }];
 
   const rows = users.map((user, index) => ({
-    id: index+1,
+    id: index + 1,
     firstName: user.firstName,
     lastName: user.lastName,
     phone: user.phone,
     email: user.email,
     dob: user.dob,
+    blocked: user.blocked,
   }));
+
+  // This handles both block and unblock
+  const handleBlock=(userEmail)=>{
+    dispatch(blockUser({axiosPrivate,userEmail}))
+  }
+
+  
+
 
   return (
     <>
