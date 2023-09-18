@@ -28,7 +28,11 @@ import Comments from "./Comments/Comments";
 import { useTheme } from "@emotion/react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
-import { fetchUser, selectAllUsers } from "../../../../Redux/slices/userSlice";
+import {
+  fetchUser,
+  getAllUsersData,
+  selectAllUsers,
+} from "../../../../Redux/slices/userSlice";
 import {
   createComment,
   deletePost,
@@ -56,6 +60,16 @@ const Post = ({ post, development }) => {
   const [viewComments, setViewComments] = useState(false);
   const [postSettings, setPostSettings] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [tags, setTags] = useState([]);
+
+  const allUsers = useSelector(getAllUsersData);
+
+  const currentUser = allUsers.find((user) => user._id === post.owner._id);
+
+  // To set tags
+  useEffect(() => {
+    if (post?.tags) setTags(post.tags);
+  }, []);
 
   // To edit a post
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -81,9 +95,8 @@ const Post = ({ post, development }) => {
   };
 
   const handleReportPostConfirm = (reportReasonText) => {
-    
     // console.log(reportObject,"updated chk in confirm");
-    dispatch(reportPost({axiosPrivate,reportReasonText,postId:post._id}))
+    dispatch(reportPost({ axiosPrivate, reportReasonText, postId: post._id }));
     //todo write dispatch for report post
 
     setShowReportPostDialog(false);
@@ -137,7 +150,7 @@ const Post = ({ post, development }) => {
   // Optimize the effect by memoizing the dispatch function
   const fetchUserData = useCallback(() => {
     dispatch(fetchUser({ post, axiosPrivate }));
-  }, [dispatch]);
+  }, [dispatch, post]);
 
   useEffect(() => {
     fetchUserData();
@@ -182,7 +195,11 @@ const Post = ({ post, development }) => {
               <Avatar
                 sx={{ bgcolor: "red[500]" }}
                 aria-label="recipe"
-                src={post?.owner?.profilePicture || PF + "Images/noAvatar.jpg"}
+                src={
+                  currentUser.profilePicture
+                    ? currentUser.profilePictureURL
+                    : "/Images/noUser.jpg"
+                }
               />
             </Link>
           }
@@ -240,11 +257,20 @@ const Post = ({ post, development }) => {
           title={
             <Link
               to={`/profile/${post?.owner?._id}`}
-              style={{ textDecoration: "none", color: "black" }}
+              style={{
+                textDecoration: "none",
+                color: "black",
+                display: "flex",
+                gap: "10px",
+              }}
             >
               <Typography sx={{ fontWeight: "700" }}>
                 {post?.owner?.firstName + " " + post?.owner?.lastName}
               </Typography>
+              <Typography>
+                {tags.length > 0 && `with ${tags.length} others`}
+              </Typography>
+              <Typography>{post?.location && `at ${post.location}`}</Typography>
             </Link>
           }
           subheader={
@@ -255,16 +281,18 @@ const Post = ({ post, development }) => {
         />
 
         <Box paddingLeft={1} paddingRight={1}>
-          <CardMedia
-            component="img"
-            height="250"
-            image={development ? "Images/coverPic.avif" : post?.imageURL}
-            alt="Paella dish"
-            // maxWidth={"100%"}
+          {post.image && (
+            <CardMedia
+              component="img"
+              height="250"
+              image={development ? "Images/coverPic.avif" : post?.imageURL}
+              alt="Paella dish"
+              // maxWidth={"100%"}
 
-            // style={{paddingLeft:'10px',paddingRight:'10px'}}
-            sx={{ objectFit: "contain" }}
-          />
+              // style={{paddingLeft:'10px',paddingRight:'10px'}}
+              sx={{ objectFit: "contain" }}
+            />
+          )}
         </Box>
         <CardContent>
           <Typography variant="body2" color="text.secondary">

@@ -16,7 +16,10 @@ import HomeIcon from "@mui/icons-material/Home";
 import ChatIcon from "@mui/icons-material/Chat";
 import NotificationsActiveIcon from "@mui/icons-material/NotificationsActive";
 
-import { selectAllUsers } from "../../../Redux/slices/userSlice";
+import {
+  getAllUsersData,
+  selectAllUsers,
+} from "../../../Redux/slices/userSlice";
 
 import { useSelector, useDispatch } from "react-redux";
 
@@ -61,9 +64,16 @@ const Navigationbar = () => {
   const PF = import.meta.env.VITE_APP_PUBLIC_FOLDER;
 
   // TODO: WRITE CODE : handle the logout here
+
+  const handleProfileClick = () => {
+    <Link to={`/profile/${currentUser?._id}`} />;
+  };
   const handleLogout = () => {};
 
   const user = useSelector(selectAllUsers);
+  const allUsers = useSelector(getAllUsersData);
+  const currentUser = allUsers.find((eachUser) => eachUser._id === user._id);
+
   // console.log(user, "user");
   const [openMenu, setOpenMenu] = useState(false);
 
@@ -119,7 +129,14 @@ const Navigationbar = () => {
                 setOpenMenu(true);
               }}
             >
-              <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
+              <Avatar
+                alt="Remy Sharp"
+                src={
+                  currentUser?.profilePicture
+                    ? currentUser.profilePictureURL
+                    : "/static/images/avatar/1.jpg"
+                }
+              />
             </IconButton>
           </Icons>
           <UserBox
@@ -128,7 +145,7 @@ const Navigationbar = () => {
             }}
           >
             <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-            <Typography variant="span">{`${user.firstName} ${user.lastName}`}</Typography>
+            <Typography variant="span">{`${currentUser?.firstName} ${currentUser?.lastName}`}</Typography>
           </UserBox>
         </StyledToolbar>
         <Menu
@@ -145,7 +162,7 @@ const Navigationbar = () => {
             "aria-labelledby": "basic-button",
           }}
         >
-          <MenuItem>Profile</MenuItem>
+          <MenuItem onClick={handleProfileClick}>Profile</MenuItem>
           <MenuItem>My account</MenuItem>
           <MenuItem onClick={handleLogout}>Logout</MenuItem>
         </Menu>

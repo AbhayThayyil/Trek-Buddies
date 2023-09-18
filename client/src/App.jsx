@@ -14,6 +14,7 @@ import Missing from "./components/user-components/404/404";
 
 // authentication for protected route
 import RequireAuth from "./components/RequireAuth";
+
 import Users from "./components/Users";
 import ProfilePage from "./pages/user-pages/ProfilePage/ProfilePage";
 import Layout from "./components/Layout";
@@ -34,8 +35,8 @@ function App() {
             <Route path="/signup" element={<Signup />} />
 
             {/* PROTECTED ROUTES */}
-            <Route element={<PersistLogin />}>
-              <Route element={<RequireAuth />}>
+              <Route element={<PersistLogin />}>
+            <Route element={<RequireAuth />}>
                 <Route path="/" element={<Homepage />} />
                 <Route path="/listUsers" element={<Users />} />
                 <Route path="/trip" element={<TripPage />} />

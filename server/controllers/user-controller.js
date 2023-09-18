@@ -1,10 +1,46 @@
 import User from "../models/User.js";
 import bcrypt from "bcrypt";
 
+import { bucketName, s3 } from "../config/s3bucket.js";
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
+
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
+import sharp from "sharp";
+import crypto from "crypto";
+
+const randomImageName = (bytes = 32) =>
+  crypto.randomBytes(bytes).toString("hex");
+
 export const getAllUsers = async (req, res) => {
   try {
     const allUsers = await User.find();
     if (allUsers) {
+      for (const user of allUsers) {
+        if (user.profilePicture) {
+          const getObjectParams = {
+            Bucket: bucketName,
+            Key: user.profilePicture,
+          };
+          const command = new GetObjectCommand(getObjectParams);
+          const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+          user.profilePictureURL = url;
+        }
+        if (user.coverPicture) {
+          const getObjectParams = {
+            Bucket: bucketName,
+            Key: user.coverPicture,
+          };
+          const command = new GetObjectCommand(getObjectParams);
+          const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+          user.coverPictureURL = url;
+        }
+      }
       res.status(200).json(allUsers);
     } else {
       res.status(400).json("No users found");
@@ -17,8 +53,17 @@ export const getAllUsers = async (req, res) => {
 export const getSingleUserData = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
-    const { password, updatedAt, ...other } = user._doc;
     if (user) {
+      if (user.profilePicture) {
+        const getObjectParams = {
+          Bucket: bucketName,
+          Key: user.profilePicture,
+        };
+        const command = new GetObjectCommand(getObjectParams);
+        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        user.profilePictureURL = url;
+      }
+      const { password, updatedAt, ...other } = user._doc;
       res.status(200).json(other);
     } else {
       res.status(404).json("User not found");
@@ -130,16 +175,32 @@ export const unfollowUser = async (req, res) => {
 export const getFriendsData = async (req, res) => {
   try {
     const user = await User.findById(req.userId);
+    // console.log(user, "user chk");
     const friends = await Promise.all(
-      user.followings.map((followedId) => {
+      user.following?.map((followedId) => {
         return User.findById(followedId);
       })
     );
+    // console.log(friends, "friends chk");
     let friendList = [];
-    friends.map((friend) => {
-      const { _id, firstName, lastName, profilePicture } = friend;
-      friendList.push({ _id, firstName, lastName, profilePicture });
+    
+    friends.map(async (friend) => {
+      // TODO : Add profilepic URL to get image .Fix that
+      // if (friend?.profilePicture) {
+      //   const getObjectParams = {
+      //     Bucket: bucketName,
+      //     Key: friend.profilePicture,
+      //   };
+      //   const command = new GetObjectCommand(getObjectParams);
+      //   const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+      //   friend.profilePictureURL = url;
+      //   friendList.push(friend);
+      // } 
+      // console.log(friend,"friends");
+      friendList.push(friend)
     });
+
+    // console.log(friendList, "friendlist chk");
     res.status(200).json(friendList);
   } catch (err) {
     res.status(500).json(err);
@@ -158,6 +219,78 @@ export const listUser = async (req, res) => {
     } else {
       res.status(400).json("Not found");
     }
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
+//Update profile pic
+
+export const updateProfilePic = async (req, res) => {
+  console.log(req.userId, "user id ");
+  console.log(req.file, "file");
+
+  try {
+    const contentType = "image/webp";
+    const buffer = await sharp(req.file.buffer).webp().toBuffer();
+    const imageName = randomImageName();
+    console.log(imageName, "img name chk");
+    const params = {
+      Bucket: bucketName,
+      Key: imageName,
+      Body: buffer,
+      ContentType: contentType,
+    };
+
+    const command = new PutObjectCommand(params);
+    await s3.send(command);
+
+    const updatedUser = await User.findByIdAndUpdate(
+      { _id: req.userId },
+      {
+        profilePicture: imageName,
+      },
+      { returnDocument: "after" }
+    );
+
+    // console.log(updatedUser, "return check");
+    res.status(200).json(updatedUser);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+};
+
+// Update Cover Pic
+
+export const updateCoverPic = async (req, res) => {
+  console.log(req.userId, "user id ");
+  console.log(req.file, "file");
+
+  try {
+    const contentType = "image/webp";
+    const buffer = await sharp(req.file.buffer).webp().toBuffer();
+    const imageName = randomImageName();
+    console.log(imageName, "img name chk");
+    const params = {
+      Bucket: bucketName,
+      Key: imageName,
+      Body: buffer,
+      ContentType: contentType,
+    };
+
+    const command = new PutObjectCommand(params);
+    await s3.send(command);
+
+    const updatedUser = await User.findByIdAndUpdate(
+      { _id: req.userId },
+      {
+        coverPicture: imageName,
+      },
+      { returnDocument: "after" }
+    );
+
+    // console.log(updatedUser, "return check");
+    res.status(200).json(updatedUser);
   } catch (err) {
     res.status(500).json(err);
   }

@@ -1,16 +1,29 @@
 import { Avatar, Box, Typography } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 
 import "./miniProfile.css";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
-import { selectAllUsers } from "../../../Redux/slices/userSlice";
+import {
+  getAllUsersData,
+  getAllUsersInfo,
+  selectAllUsers,
+} from "../../../Redux/slices/userSlice";
+import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 
 const MiniProfile = () => {
-  const user = useSelector(selectAllUsers)
+  const dispatch = useDispatch();
+  const axiosPrivate = useAxiosPrivate();
 
+  useEffect(() => {
+    dispatch(getAllUsersInfo({ axiosPrivate }));
+  }, []);
+
+  const user = useSelector(selectAllUsers);
+  const allUsers = useSelector(getAllUsersData);
+  const currentUser = allUsers.find((eachUser) => eachUser._id === user._id);
   const PF = import.meta.env.VITE_APP_PUBLIC_FOLDER;
-  
+
   return (
     <>
       <Box
@@ -29,9 +42,21 @@ const MiniProfile = () => {
             flexDirection={"column"}
             alignItems={"center"}
           >
-            <img src="/Images/coverPic.avif" alt="" className="userCardCover" />
+            <img
+              src={
+                currentUser?.coverPicture
+                  ? currentUser?.coverPictureURL
+                  : "/Images/noCover.jpg"
+              }
+              alt=""
+              className="userCardCover"
+            />
             <Avatar
-              src=""
+              src={
+                currentUser?.profilePicture
+                  ? currentUser?.profilePictureURL
+                  : "/Images/noUser.jpg"
+              }
               sx={{
                 position: "absolute",
                 left: 0,
@@ -43,10 +68,10 @@ const MiniProfile = () => {
               }}
             />
             <Typography variant="h2" fontSize={20} marginTop={4}>
-            {`${user.firstName} ${user.lastName}`}
+              {`${currentUser?.firstName} ${currentUser?.lastName}`}
             </Typography>
             <Typography variant="h4" fontSize={15}>
-              {user.bio}
+              {currentUser?.bio}
             </Typography>
           </Box>
         </Box>

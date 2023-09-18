@@ -27,8 +27,7 @@ const TripSchema = new mongoose.Schema(
     },
     tripDate: {
       type: Date,
-      //todo:make date required after fixing schema
-      // required:true,
+      required: true,
     },
     joinRequests: {
       type: [
@@ -37,6 +36,9 @@ const TripSchema = new mongoose.Schema(
           ref: "User",
         },
       ],
+    },
+    expireAt: {
+      type: Date,
     },
   },
   { timestamps: true }

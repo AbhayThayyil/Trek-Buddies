@@ -67,7 +67,7 @@ const PostsList = () => {
     {
       field: "operations",
       headerName: "Operations",
-      width: 160,
+      width: 180,
       renderCell: (params) => {
         return (
           <>

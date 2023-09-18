@@ -3,6 +3,15 @@ import Admin from "../models/Admin.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
+import { bucketName, s3 } from "../config/s3bucket.js";
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+
 export const getUserRegistration = (req, res) => {
   res.send("User Registration page");
 };
@@ -88,8 +97,28 @@ export const postUserLogin = async (req, res) => {
 
         // Saving Refresh Token with the Current User
         foundUser.refreshToken = refreshToken;
+        // accessing profile pic from s3
+        if (foundUser.profilePicture) {
+          const getObjectParams = {
+            Bucket: bucketName,
+            Key: foundUser.profilePicture,
+          };
+          const command = new GetObjectCommand(getObjectParams);
+          const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+          foundUser.profilePictureURL = url;
+        }
+        //accessing cover pic from s3
+        if (foundUser.coverPicture) {
+          const getObjectParams = {
+            Bucket: bucketName,
+            Key: foundUser.coverPicture,
+          };
+          const command = new GetObjectCommand(getObjectParams);
+          const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+          foundUser.coverPictureURL = url;
+        }
         const result = await foundUser.save();
-        console.log(result);
+        // console.log(result, "user logged in data");
 
         res.cookie("jwt", refreshToken, {
           httpOnly: true,

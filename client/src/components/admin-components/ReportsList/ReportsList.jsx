@@ -1,4 +1,4 @@
-import { Typography } from "@mui/material";
+import { Button, Typography } from "@mui/material";
 import Box from "@mui/material/Box";
 import { DataGrid } from "@mui/x-data-grid";
 import { useState, useEffect } from "react";
@@ -10,6 +10,7 @@ import {
   adminGetAllUsers,
   getReports,
 } from "../../../Redux/slices/adminSlice";
+import PostModalAdmin from "../PostsList/PostModalAdmin/PostModalAdmin";
 
 const ReportsList = () => {
   const reports = useSelector(adminGetAllReports);
@@ -24,6 +25,20 @@ const ReportsList = () => {
   useEffect(() => {
     dispatch(getReports({ axiosPrivate }));
   }, [dispatch, axiosPrivate]);
+
+  // To open MODAL to VIEW the POST
+  const [postDialogOpen, setPostDialogOpen] = useState(false);
+  const [selectedPostId, setSelectedPostId] = useState("");
+
+  const handlePostDialogClick = (postId) => {
+    // console.log(postId, "postid click check");
+    setPostDialogOpen(true);
+    setSelectedPostId(postId);
+  };
+
+  const handlePostDialogCancel = () => {
+    setPostDialogOpen(false);
+  };
 
   const columns = [
     { field: "id", headerName: "ID", width: 90 },
@@ -51,6 +66,36 @@ const ReportsList = () => {
       headerName: "Report Reason",
       sortable: true,
       width: 160,
+    },
+    {
+      field: "operations",
+      headerName: "Operations",
+      width: 300,
+      renderCell: (params) => {
+        return (
+          <>
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{ margin: "5px" }}
+              onClick={() => handlePostDialogClick(params.row.postId)}
+            >
+              View{" "}
+            </Button>
+            <PostModalAdmin
+              open={postDialogOpen}
+              close={handlePostDialogCancel}
+              postId={selectedPostId}
+            />
+            <Button variant="contained" color="error" sx={{ margin: "5px" }}>
+              Remove{" "}
+            </Button>
+            <Button variant="contained" color="success" sx={{ margin: "5px" }}>
+              Approve{" "}
+            </Button>
+          </>
+        );
+      },
     },
   ];
 

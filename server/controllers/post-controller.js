@@ -23,34 +23,52 @@ const randomImageName = (bytes = 32) =>
 
 export const createPost = async (req, res) => {
   console.log("req.body", req.body);
-  console.log("req.file", req.file);
 
-  const contentType = "image/webp";
-
-  const buffer = await sharp(req.file.buffer).webp().toBuffer();
-  const imageName = randomImageName();
-
-  const params = {
-    Bucket: bucketName,
-    Key: imageName,
-    Body: buffer,
-    ContentType: contentType,
-  };
-
-  const command = new PutObjectCommand(params);
-  await s3.send(command);
-
-  const newPost = await new Post({
-    owner: req.body.owner,
-    description: req.body.description,
-    image: imageName,
-  }).populate("owner");
-
-  // console.log(newPost,"this is new post populated");
   try {
-    const savedPost = await newPost.save();
-    res.status(200).json(savedPost);
+    const { owner, description,tags,location } = req.body;
+    let imageName;
+    console.log("req.file", req.file);
+
+    if (req.file) {
+      const contentType = "image/webp";
+      const buffer = await sharp(req.file.buffer).webp().toBuffer();
+      imageName = randomImageName();
+      const params = {
+        Bucket: bucketName,
+        Key: imageName,
+        Body: buffer,
+        ContentType: contentType,
+      };
+
+      const command = new PutObjectCommand(params);
+      await s3.send(command);
+
+      // Create a post only if image is uploaded
+
+      const newPostObject = await new Post({
+        owner,
+        description,
+        image: imageName,
+        tags,
+        location
+      }).populate("owner");
+
+      const newPost = await newPostObject.save();
+      res.status(200).json(newPost);
+    } else {
+      // if no Image, then post without image
+      const newPostObject = await new Post({
+        owner,
+        description,
+        tags,
+        location
+      }).populate("owner");
+
+      const newPost = await newPostObject.save();
+      res.status(200).json(newPost);
+    }
   } catch (err) {
+    console.error("Error creating a post:", err);
     res.status(500).json(err);
   }
 };
@@ -94,13 +112,15 @@ export const deletePost = async (req, res) => {
           .json({ error: "You cannot delete other's post" });
       }
 
-      const params = {
-        Bucket: bucketName,
-        Key: postToDelete.image,
-      };
+      if (postToDelete.image) {
+        const params = {
+          Bucket: bucketName,
+          Key: postToDelete.image,
+        };
 
-      const command = new DeleteObjectCommand(params);
-      await s3.send(command);
+        const command = new DeleteObjectCommand(params);
+        await s3.send(command);
+      }
 
       await postToDelete.deleteOne();
       return res
@@ -143,15 +163,17 @@ export const likePost = async (req, res) => {
 
 export const getSinglePost = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.postId);
+    const post = await Post.findById(req.params.postId).populate("owner tags");
 
-    const getObjectParams = {
-      Bucket: bucketName,
-      Key: post.image,
-    };
-    const command = new GetObjectCommand(getObjectParams);
-    const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
-    post.imageURL = url;
+    if (post.image) {
+      const getObjectParams = {
+        Bucket: bucketName,
+        Key: post.image,
+      };
+      const command = new GetObjectCommand(getObjectParams);
+      const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+      post.imageURL = url;
+    }
 
     res.status(200).json(post);
   } catch (err) {
@@ -173,20 +195,22 @@ export const getTimelinePosts = async (req, res) => {
     })
       .sort({ createdAt: -1 })
       .populate({
-        path: "comments.userId owner",
+        path: "comments.userId owner tags",
         model: "User",
         select: "firstName lastName profilePicture",
       });
 
     for (const post of timelinePosts) {
-      const getObjectParams = {
-        Bucket: bucketName,
-        Key: post.image,
-      };
+      if (post.image) {
+        const getObjectParams = {
+          Bucket: bucketName,
+          Key: post.image,
+        };
 
-      const command = new GetObjectCommand(getObjectParams);
-      const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
-      post.imageURL = url;
+        const command = new GetObjectCommand(getObjectParams);
+        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        post.imageURL = url;
+      }
     }
 
     // console.log(timelinePosts, "timeline post chk");
@@ -276,20 +300,22 @@ export const getUserPosts = async (req, res) => {
     }
 
     const userPosts = await Post.find({ owner: currentUser._id }).populate({
-      path: "owner comments.userId",
+      path: "owner comments.userId tags",
       model: "User",
       select: "firstName lastName profilePicture",
     });
 
     for (const post of userPosts) {
-      const getObjectParams = {
-        Bucket: bucketName,
-        Key: post.image,
-      };
+      if (post.image) {
+        const getObjectParams = {
+          Bucket: bucketName,
+          Key: post.image,
+        };
 
-      const command = new GetObjectCommand(getObjectParams);
-      const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
-      post.imageURL = url;
+        const command = new GetObjectCommand(getObjectParams);
+        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        post.imageURL = url;
+      }
     }
 
     // console.log(userPosts,"user's posts");
@@ -321,7 +347,7 @@ export const reportPost = async (req, res) => {
           postId: postToReport._id,
           reportedUserId: postToReport.owner,
         };
-        console.log(reportObject, "report obj chk");
+        // console.log(reportObject, "report obj chk");
         await postToReport.updateOne({
           $push: { reports: reportObject },
         });

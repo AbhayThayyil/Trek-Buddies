@@ -10,20 +10,66 @@ import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 
 import {
+  getAllUsersData,
   selectAllUsers,
   updateFollow,
   updateUnfollow,
+  userInfoFromId,
 } from "../../../Redux/slices/userSlice";
 import { getAllPosts } from "../../../Redux/slices/postSlice";
+import ProfilePicDialog from "./ProfilePicDialog/ProfilePicDialog";
+import CoverPicDialog from "./CoverPicDialog/CoverPicDialog";
 
 const Profile = () => {
   const dispatch = useDispatch();
 
+  const userId = useParams().userId; // get userId from params
+
+  // useEffect(() => {
+  //   dispatch(userInfoFromId({ axiosPrivate, userId }));
+  // }, [userId]);
+
   const axiosPrivate = useAxiosPrivate();
-  const [postOwner, setPostOwner] = useState({});
-  const user = useSelector(selectAllUsers);
+
   const posts = useSelector(getAllPosts);
-  const userId = useParams().userId;
+
+  const allUsers = useSelector(getAllUsersData);
+
+  const currentUser = allUsers.find((user) => user._id === userId);
+
+  // console.log(user,"user info ");
+
+  // Profile Pic ops
+  const [openProfilePic, setOpenProfilePic] = useState(false);
+  const handleProfilePicClick = () => {
+    setOpenProfilePic(true);
+  };
+
+  const handleProfilePicCancel = () => {
+    setOpenProfilePic(false);
+  };
+
+  const handleProfilePicConfirm = () => {
+    setOpenProfilePic(false);
+  };
+
+  /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
+
+  // Cover Pic ops
+  const [openCoverPic, setOpenCoverPic] = useState(false);
+  const handleCoverPicClick = () => {
+    setOpenCoverPic(true);
+  };
+
+  const handleCoverPicCancel = () => {
+    setOpenCoverPic(false);
+  };
+
+  const handleCoverPicConfirm = () => {
+    setOpenCoverPic(false);
+  };
+
+  /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
   const [userPostsLength, setUserPostsLength] = useState();
 
@@ -32,6 +78,8 @@ const Profile = () => {
     // console.log(userPosts.length,"userpost length");
     setUserPostsLength(userPosts.length);
   }, [posts, userId]);
+
+  const user = useSelector(selectAllUsers);
 
   const [followed, setFollowed] = useState(user.following.includes(userId));
 
@@ -48,10 +96,9 @@ const Profile = () => {
     const fetchUser = async () => {
       const response = await axiosPrivate.get(`/users/${userId}`);
       // console.log(response.data, "User details of post");
-      
-      setFollowersLength(response.data.followers.length)
-      setFollowingLength(response.data.following.length)
-      setPostOwner(response.data);
+
+      setFollowersLength(response.data.followers.length);
+      setFollowingLength(response.data.following.length);
     };
     fetchUser();
   }, [userId]);
@@ -81,13 +128,29 @@ const Profile = () => {
           >
             <img
               className="profileCoverPicture"
-              src="/Images/coverPic.avif"
-              alt=""
+              src={currentUser.coverPicture ? currentUser.coverPictureURL : "/Images/noCover.jpg"}
+              alt="coverPic"
+              onClick={handleCoverPicClick}
+            />
+            <CoverPicDialog
+              open={openCoverPic}
+              close={handleCoverPicCancel}
+              profileOwner={currentUser}
+              handleConfirm={handleCoverPicConfirm}
             />
             <img
               className="profileUserPicture"
-              src="/Images/userPic.avif"
-              alt=""
+              src={
+                currentUser.profilePicture ? currentUser.profilePictureURL : "/Images/noUser.jpg"
+              }
+              alt="profilePic"
+              onClick={handleProfilePicClick}
+            />
+            <ProfilePicDialog
+              open={openProfilePic}
+              close={handleProfilePicCancel}
+              profileOwner={currentUser}
+              handleConfirm={handleProfilePicConfirm}
             />
           </Box>
 
@@ -102,7 +165,7 @@ const Profile = () => {
             }}
           >
             <Typography variant="h4" className="profileInfoName">
-              {`${postOwner.firstName} ${postOwner.lastName}`}
+              {`${currentUser.firstName} ${currentUser.lastName}`}
             </Typography>
             <Typography
               component={"span"}
