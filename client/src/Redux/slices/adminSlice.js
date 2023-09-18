@@ -17,7 +17,7 @@ export const getUsers = createAsyncThunk(
       // console.log(response.data.users,"response for users list for admin");
       return response.data.users;
     } catch (err) {
-      return rejectWithValue("error", err);
+      return rejectWithValue(err);
     }
   }
 );
@@ -31,7 +31,7 @@ export const getPosts = createAsyncThunk(
       // console.log(response,"response for post list for admin");
       return response.data.posts;
     } catch (err) {
-      return rejectWithValue("error", err);
+      return rejectWithValue(err);
     }
   }
 );
@@ -46,7 +46,7 @@ export const getReports = createAsyncThunk(
       // console.log(response.data, "reponse chk");
       return response.data.allReports
     } catch (err) {
-      return rejectWithValue("error", err);
+      return rejectWithValue(err);
     }
   }
 );
@@ -63,7 +63,7 @@ export const blockUser = createAsyncThunk(
       // console.log(response, "response chk");
       return response.data.updatedUser;
     } catch (err) {
-      return rejectWithValue("error", err);
+      return rejectWithValue(err);
     }
   }
 );

@@ -8,11 +8,20 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import AddIcon from "@mui/icons-material/Add";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import TripModal from "./TripModal/TripModal";
+import {
+  dropTrip,
+  getTrips,
+  joinTrip,
+  leaveTrip,
+  listAllTrips,
+  searchTrip,
+} from "../../../Redux/slices/tripSlice";
+import { selectAllUsers } from "../../../Redux/slices/userSlice";
 
 const Trip = () => {
   const axiosPrivate = useAxiosPrivate();
@@ -20,6 +29,27 @@ const Trip = () => {
 
   const [tripModalOpen, setTripModalOpen] = useState(false);
 
+  useEffect(() => {
+    dispatch(getTrips({ axiosPrivate }));
+  }, []);
+
+  const user = useSelector(selectAllUsers);
+  console.log(user, "user info chk");
+
+  const tripsList = useSelector(listAllTrips);
+  console.log(tripsList, "triplist chk");
+
+  // To search trips
+
+  const [searchText, setSearchText] = useState("");
+
+  const { searchData } = useSelector((state) => state.trip);
+
+  useEffect(() => {
+    dispatch(searchTrip(searchText));
+  }, [searchText]);
+
+  // To create a trip
   const handleTripButtonClick = () => {
     setTripModalOpen(true);
   };
@@ -29,8 +59,27 @@ const Trip = () => {
   };
 
   const handleTripButtonConfirm = () => {
-    //todo : Write code to dispatch trip creation
     setTripModalOpen(false);
+  };
+
+  // Exisiting trip operations
+
+  const handleTripDrop = (tripId) => {
+    dispatch(dropTrip({ axiosPrivate, tripId })).then(() => {
+      dispatch(getTrips({ axiosPrivate }));
+    });
+  };
+
+  const handleTripJoin = (tripId) => {
+    dispatch(joinTrip({ axiosPrivate, tripId })).then(() => {
+      dispatch(getTrips({ axiosPrivate }));
+    });
+  };
+
+  const handleTripLeave = (tripId) => {
+    dispatch(leaveTrip({ axiosPrivate, tripId })).then(() => {
+      dispatch(getTrips({ axiosPrivate }));
+    });
   };
 
   return (
@@ -56,57 +105,111 @@ const Trip = () => {
           />
         </Box>
         <Box margin={3} className="tripSearch">
-          <TextField label="Search for Trips" type="search" fullWidth />
+          <TextField
+            label="Search for Trips"
+            type="search"
+            fullWidth
+            onChange={(e) => setSearchText(e.target.value)}
+          />
         </Box>
         <Box className="tripCards">
-          <Card sx={{ minWidth: 275 }}>
-            <CardContent>
-              <Typography variant="h5">Trip Name</Typography>
-              <Typography variant="h6">Location:Trip Location</Typography>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "flex-start",
-                  alignItems: "center",
-                  margin: "5px",
-                  gap: "10px",
-                }}
-              >
-                <Typography>Admin:</Typography>
-                <Avatar></Avatar>
-              </Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "flex-start",
-                  alignItems: "center",
-                  margin: "5px",
-                  gap: "10px",
-                }}
-              >
-                <Typography>Trip Mates:</Typography>
-                <AvatarGroup max={4}>
-                  <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
-                  <Avatar
-                    alt="Travis Howard"
-                    src="/static/images/avatar/2.jpg"
-                  />
-                  <Avatar alt="Cindy Baker" src="/static/images/avatar/3.jpg" />
-                  <Avatar
-                    alt="Agnes Walker"
-                    src="/static/images/avatar/4.jpg"
-                  />
-                  <Avatar
-                    alt="Trevor Henderson"
-                    src="/static/images/avatar/5.jpg"
-                  />
-                </AvatarGroup>
-              </Box>
-              <Box sx={{ margin: "5px", gap: "10px" }}>
-                <Typography>Trip Date: DATE</Typography>
-              </Box>
-            </CardContent>
-          </Card>
+          {tripsList
+            .filter((trip) => {
+              if (searchData.length === 0) {
+                return trip;
+              } else {
+                return (
+                  trip.tripName
+                    .toLowerCase()
+                    .includes(searchData.toLowerCase()) ||
+                  trip.createdBy.firstName
+                    .toLowerCase()
+                    .includes(searchData.toLowerCase()) ||
+                  trip.tripLocation
+                    .toLowerCase()
+                    .includes(searchData.toLowerCase())
+                );
+              }
+            })
+
+            .map((trip) => (
+              <Card sx={{ minWidth: 275, margin: "10px" }}>
+                <CardContent>
+                  <Typography variant="h5">{trip?.tripName}</Typography>
+                  <Typography variant="h6">
+                    Location:{trip?.tripLocation}
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "flex-start",
+                      alignItems: "center",
+                      margin: "5px",
+                      gap: "10px",
+                    }}
+                  >
+                    <Typography>Admin:{trip?.createdBy.firstName}</Typography>
+                    <Avatar
+                      src={
+                        trip.createdBy.profilePicture
+                          ? trip.createdBy.profilePictureURL
+                          : "/Images/noUser.jpg"
+                      }
+                    />
+                  </Box>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "flex-start",
+                      alignItems: "center",
+                      margin: "5px",
+                      gap: "10px",
+                    }}
+                  >
+                    <Typography>Trip Mates:</Typography>
+                    <AvatarGroup max={4}>
+                      {trip?.tripMates?.map((element) => (
+                        <Avatar
+                          alt={element._id}
+                          key={element._id}
+                          src={
+                            element.profilePicture
+                              ? element.profilePictureURL
+                              : "/Images/noUser.jpg"
+                          }
+                        />
+                      ))}
+                    </AvatarGroup>
+                  </Box>
+                  <Box sx={{ margin: "5px", gap: "10px" }}>
+                    <Typography>
+                      Trip Date:{" "}
+                      {trip ? new Date(trip.tripDate).toLocaleString() : ""}
+                    </Typography>
+                  </Box>
+
+                  {trip.createdBy?._id === user._id ? (
+                    <Button
+                      sx={{ color: "red" }}
+                      onClick={() => handleTripDrop(trip._id)}
+                    >
+                      Drop trip
+                    </Button>
+                  ) : trip.tripMates.some((mate) => mate._id === user._id) ? (
+                    <Button onClick={() => handleTripLeave(trip._id)}>
+                      Leave
+                    </Button>
+                  ) : (
+                    <Button
+                      sx={{ color: "green" }}
+                      onClick={() => handleTripJoin(trip._id)}
+                    >
+                      Join
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
         </Box>
       </Box>
     </>

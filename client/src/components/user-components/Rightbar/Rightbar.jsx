@@ -2,27 +2,29 @@ import { Avatar, AvatarGroup, Box, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import axios from "../../../utils/axios";
 import { Link } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
-import { selectAllUsers } from "../../../Redux/slices/userSlice";
+import {
+  getAllUsersData,
+  getAllUsersInfo,
+  selectAllUsers,
+} from "../../../Redux/slices/userSlice";
+import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 
 const Rightbar = () => {
-  const [allUsers, setAllUsers] = useState([]);
+  const dispatch = useDispatch();
+  const axiosPrivate = useAxiosPrivate();
+
   const user = useSelector(selectAllUsers);
 
   const PF = import.meta.env.VITE_APP_PUBLIC_FOLDER;
 
   useEffect(() => {
-    const fetchAllUsers = async () => {
-      const response = await axios.get(`/users`);
-      console.log(response.data, "all users");
-
-      setAllUsers(
-        response.data.filter((users) => !users._id.includes(user._id))
-      );
-    };
-    fetchAllUsers();
+    dispatch(getAllUsersInfo({ axiosPrivate }));
   }, []);
+
+  const usersList = useSelector(getAllUsersData);
+  const allUsers = usersList.filter((users) => !users._id.includes(user._id));
 
   return (
     <>
@@ -53,9 +55,17 @@ const Rightbar = () => {
               style={{ textDecoration: "none", color: "black" }}
               key={user._id}
             >
-              <Box display={"flex"} alignItems={"center"} margin={2} >
-                <Avatar />
-                <Typography marginLeft={2}>{user.firstName}</Typography>
+              <Box display={"flex"} alignItems={"center"} margin={2}>
+                <Avatar
+                  src={
+                    user.profilePicture
+                      ? user.profilePictureURL
+                      : "/Images/noUser.jpg"
+                  }
+                />
+                <Typography
+                  marginLeft={2}
+                >{`${user.firstName} ${user.lastName}`}</Typography>
               </Box>
             </Link>
           ))}

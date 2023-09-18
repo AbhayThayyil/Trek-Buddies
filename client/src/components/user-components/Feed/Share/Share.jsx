@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./share.css";
-import { Avatar, Box, Button, InputBase } from "@mui/material";
+import { Avatar, Box, Button, InputBase, Typography } from "@mui/material";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
@@ -10,20 +10,36 @@ import noAvatarImage from "../../../../assets/noAvatar.jpg";
 
 import { useSelector, useDispatch } from "react-redux";
 import useAxiosPrivate from "../../../../hooks/useAxiosPrivate";
-import { selectAllUsers } from "../../../../Redux/slices/userSlice";
+import {
+  getAllUsersData,
+  getAllUsersInfo,
+  selectAllUsers,
+} from "../../../../Redux/slices/userSlice";
 import { createPost, fetchPosts } from "../../../../Redux/slices/postSlice";
+import TagShareModal from "./TagShareModal/TagShareModal";
+import LocationShareModal from "./LocationShareModal/LocationShareModal";
 
 const Share = () => {
-  const user = useSelector(selectAllUsers);
+  const dispatch = useDispatch();
+  const axiosPrivate = useAxiosPrivate();
+
   const PF = import.meta.env.VITE_APP_PUBLIC_FOLDER;
 
-  const dispatch = useDispatch();
+  useEffect(() => {
+    dispatch(getAllUsersInfo({ axiosPrivate }));
+  }, []);
+
+  const user = useSelector(selectAllUsers);
+  const allUsers = useSelector(getAllUsersData);
+  const currentUser = allUsers.find((eachUser) => eachUser._id === user._id);
 
   const [uploadedImage, setUploadedImage] = useState(null);
   const imageRef = useRef();
-  const [description, setDescription] = useState("");
 
-  const axiosPrivate = useAxiosPrivate();
+  const [tags, setTags] = useState(null);
+  const [location, setLocation] = useState(null);
+
+  const [description, setDescription] = useState("");
 
   const onImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -37,52 +53,99 @@ const Share = () => {
     setUploadedImage(null);
   };
 
+  // TO TAG Friends
+  const [tagModalOpen, setTagModalOpen] = useState(false);
+
+  const handleTagClick = () => {
+    setTagModalOpen(true);
+  };
+
+  const handleTagCancel = () => {
+    setTagModalOpen(false);
+  };
+
+  const handleTagConfirm = (tagged) => {
+    setTags(tagged);
+    setTagModalOpen(false);
+  };
+
+  // to cancel shared at Share component
+
+  const shareTagCancel = () => {
+    setTags(null);
+  };
+
+  // To ADD LOCATION
+  const [locationModalOpen, setLocationModalOpen] = useState(false);
+
+  const handleLocationClick = () => {
+    setLocationModalOpen(true);
+  };
+
+  const handleLocationCancel = () => {
+    setLocationModalOpen(false);
+  };
+
+  const handleLocationConfirm = (enteredLocation) => {
+    setLocation(enteredLocation);
+    setLocationModalOpen(false);
+  };
+
+  // to cancel shared at Share component
+
+  const shareLocationCancel = () => {
+    setLocation(null);
+  };
+
   // To reset the share component after posting
 
   const resetShare = () => {
     setUploadedImage(null);
     setDescription("");
+    setTags(null);
+    setLocation('')
   };
+
+  // console.log(tags, "tags chk");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // const newPost = {
-    //   owner: user._id,
-    //   description: description,
-    // };
 
     const data = new FormData();
 
-    data.append("name", uploadedImage.name);
     data.append("owner", user._id);
     data.append("description", description);
+    if (tags) {
+      for (const tag of tags) {
+        data.append("tags[]", tag);
+      }
+    }
+    if (location) data.append("location", location);
     if (uploadedImage) {
+      data.append("name", uploadedImage.name);
       data.append("file", uploadedImage);
       console.log(data.get("file"), "file check");
       console.log(data, "data check");
-
-      // newPost.image = fileName;
-
-      // console.log(newPost, "=========new post details========");
 
       const config = {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       };
-      dispatch(createPost({ data, axiosPrivate, config })).then(() => {
-        dispatch(fetchPosts({ userId: user._id, axiosPrivate }));
-      });
+
+      console.log(data, "data chk ");
+
+      dispatch(createPost({ data, axiosPrivate, config })).then(() =>
+        dispatch(fetchPosts({ userId: user._id, axiosPrivate }))
+      );
       resetShare();
-    }
-    else{
-      dispatch(createPost({ data, axiosPrivate, config })).then(() => {
-        dispatch(fetchPosts({ userId: user._id, axiosPrivate }));
-      });
+    } else {
+      dispatch(createPost({ data, axiosPrivate })).then(() =>
+        dispatch(fetchPosts({ userId: user._id, axiosPrivate }))
+      );
       resetShare();
     }
   };
-  // todo delete this if the bottom one is success
 
   return (
     <Box
@@ -107,19 +170,39 @@ const Share = () => {
         <Box className="shareTop" display={"flex"} alignItems={"center"}>
           <Avatar
             alt="user Profile pic"
-            src={noAvatarImage}
+            src={
+              currentUser.profilePicture
+                ? currentUser.profilePictureURL
+                : "/Images/noUser.jpg"
+            }
             sx={{ marginRight: "10px" }}
           />
           <InputBase
             name="description"
             className="shareInput"
-            placeholder={`What's happening ${user.firstName} ??`}
+            placeholder={`What's happening ${currentUser.firstName} ??`}
             sx={{ width: "80%" }}
             onChange={(e) => setDescription(e.target.value)}
             value={description}
           />
         </Box>
         <hr className="shareHr" />
+        {tags && (
+          <Box
+            sx={{ display: "flex", justifyContent: "center", color: "blue" }}
+          >
+            <Typography>{tags.length} people Tagged</Typography>
+            <CancelIcon onClick={shareTagCancel} />
+          </Box>
+        )}
+        {location && (
+          <Box
+            sx={{ display: "flex", justifyContent: "center", color: "green" }}
+          >
+            <Typography>Location added</Typography>
+            <CancelIcon onClick={shareLocationCancel} />
+          </Box>
+        )}
         {uploadedImage && (
           <Box
             className="shareImageContainer"
@@ -176,7 +259,7 @@ const Share = () => {
                 key={Date.now()}
                 ref={imageRef}
                 id="image"
-                accept=".png,.jpeg,.jpg"
+                accept="image/*"
                 onChange={onImageChange}
               />
             </Box>
@@ -188,8 +271,17 @@ const Share = () => {
               marginLeft={3}
               sx={{ cursor: "pointer" }}
             >
-              <LocalOfferIcon className="shareIcon" sx={{ color: "blue" }} />
+              <LocalOfferIcon
+                className="shareIcon"
+                sx={{ color: "blue" }}
+                onClick={handleTagClick}
+              />
               <span className="shareOptionText">Tag </span>
+              <TagShareModal
+                open={tagModalOpen}
+                close={handleTagCancel}
+                handleConfirm={handleTagConfirm}
+              />
             </Box>
             <Box
               className="shareOption"
@@ -199,8 +291,17 @@ const Share = () => {
               marginLeft={3}
               sx={{ cursor: "pointer" }}
             >
-              <LocationOnIcon className="shareIcon" sx={{ color: "green" }} />
+              <LocationOnIcon
+                className="shareIcon"
+                sx={{ color: "green" }}
+                onClick={handleLocationClick}
+              />
               <span className="shareOptionText">Location </span>
+              <LocationShareModal
+                open={locationModalOpen}
+                close={handleLocationCancel}
+                handleConfirm={handleLocationConfirm}
+              />
             </Box>
           </Box>
           <Button

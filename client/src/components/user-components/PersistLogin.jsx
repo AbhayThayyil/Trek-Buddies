@@ -10,12 +10,12 @@ const PersistLogin = () => {
   const refresh = useRefreshToken();
 
   const user = useSelector(selectAllUsers);
-  console.log(user,"user details from redux");
+  // console.log(user,"user details from redux");
 
   useEffect(() => {
     const verifyRefreshToken = async () => {
       try {
-        await refresh();
+        await refresh();  // returns new access token
       } catch (err) {
         console.error(err);
       } finally {
@@ -24,14 +24,14 @@ const PersistLogin = () => {
     };
 
     !user?.accessToken ? verifyRefreshToken() : setIsLoading(false);
-  }, [user?.accessToken]);
+  }, []);
 
   // TODO  useeffect to see whats going on .Remove it later
 
   useEffect(() => {
     console.log(`isLoading:${isLoading}`);
     console.log(`authToken:${JSON.stringify(user?.accessToken)}`);
-  }, [isLoading,user?.accessToken]);
+  }, [isLoading]);
 
   return <>
   {isLoading ?

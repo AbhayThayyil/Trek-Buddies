@@ -95,6 +95,14 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    profilePictureURL: {
+      type: String,
+      default: "",
+    },
+    coverPictureURL: {
+      type: String,
+      default: "",
+    },
   },
 
   { timestamps: true }

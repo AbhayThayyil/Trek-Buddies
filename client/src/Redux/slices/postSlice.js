@@ -10,18 +10,19 @@ const initialState = {
 export const fetchPosts = createAsyncThunk(
   "post/fetchPosts",
   async ({ userId, axiosPrivate }, { rejectWithValue }) => {
+    // console.log(userId, "id check");
     try {
       const response = userId
         ? await axiosPrivate.get(`/posts/profile/${userId}`)
         : await axiosPrivate.get(`/posts/timeline/all`);
 
-      console.log(response.data, "what is response in fetchposts");
+      // console.log(response.data, "what is response in fetchposts");
       // response.data.sort((p1, p2) => {
       //   return new Date(p2.createdAt) - new Date(p1.createdAt);
       // });
       return response.data;
     } catch (err) {
-      return rejectWithValue("error", err);
+      return rejectWithValue(err);
     }
   }
 );
@@ -31,12 +32,13 @@ export const fetchPosts = createAsyncThunk(
 export const createPost = createAsyncThunk(
   "post/createPost",
   async ({ data, axiosPrivate, config }, { rejectWithValue }) => {
+    console.log(data,"data chk");
     try {
       const response = await axiosPrivate.post("/posts", data, config);
       console.log(response.data, "what if i posted here");
       return response.data;
     } catch (err) {
-      return rejectWithValue("error", err);
+      return rejectWithValue(err);
     }
   }
 );
@@ -51,7 +53,7 @@ export const deletePost = createAsyncThunk(
       console.log(response.data, "delete post response");
       return { postId };
     } catch (err) {
-      return rejectWithValue("error", err);
+      return rejectWithValue(err);
     }
   }
 );
@@ -70,7 +72,7 @@ export const reportPost = createAsyncThunk(
       response.data.postId = postId;
       return response.data;
     } catch (err) {
-      return rejectWithValue("error", err);
+      return rejectWithValue(err);
     }
   }
 );
@@ -91,7 +93,7 @@ export const createComment = createAsyncThunk(
       return response.data;
       //todo to return
     } catch (err) {
-      return rejectWithValue("error", err);
+      return rejectWithValue(err);
     }
   }
 );
@@ -116,7 +118,7 @@ export const editComment = createAsyncThunk(
       console.log(response.data, "response after comment edit check");
       return response.data;
     } catch (err) {
-      return rejectWithValue("error", err);
+      return rejectWithValue(err);
     }
   }
 );
@@ -134,7 +136,7 @@ export const deleteComment = createAsyncThunk(
       // console.log(response.data, "response after comment delete check");
       return response.data;
     } catch (err) {
-      return rejectWithValue("error", err);
+      return rejectWithValue(err);
     }
   }
 );
@@ -150,7 +152,7 @@ export const handleLike = createAsyncThunk(
       });
       console.log(response.data, "response check after liking/disliking");
     } catch (err) {
-      return rejectWithValue("error", err);
+      return rejectWithValue(err);
     }
   }
 );
