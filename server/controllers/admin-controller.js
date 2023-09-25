@@ -27,19 +27,24 @@ export const getUsersList = async (req, res) => {
 export const getPostsList = async (req, res) => {
   try {
     const posts = await Post.find().populate("owner comments.userId");
+    console.log(posts, "posts are listed here");
     if (!posts) {
       return res.status(400).json("No posts found");
     } else {
       for (const post of posts) {
-        const getObjectParams = {
-          Bucket: bucketName,
-          Key: post.image,
-        };
+        if (post.image) {
+          const getObjectParams = {
+            Bucket: bucketName,
+            Key: post.image,
+          };
 
-        const command = new GetObjectCommand(getObjectParams);
-        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
-        post.imageURL = url;
+          const command = new GetObjectCommand(getObjectParams);
+          const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+          post.imageURL = url;
+        }
       }
+
+      console.log(posts, "posts are listed here");
 
       res.status(200).json({ posts, message: "Posts found" });
     }

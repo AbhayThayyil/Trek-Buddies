@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import axios, { axiosPrivate } from "../utils/axios";
+import  { axiosPrivate } from "../utils/axios";
 import useRefreshToken from "./useRefreshToken";
 import { selectUserState } from "../Redux/slices/userSlice";
 import { useSelector } from "react-redux";

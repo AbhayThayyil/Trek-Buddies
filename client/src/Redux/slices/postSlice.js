@@ -32,11 +32,26 @@ export const fetchPosts = createAsyncThunk(
 export const createPost = createAsyncThunk(
   "post/createPost",
   async ({ data, axiosPrivate, config }, { rejectWithValue }) => {
-    console.log(data,"data chk");
+    // console.log(data,"data chk");
     try {
       const response = await axiosPrivate.post("/posts", data, config);
-      console.log(response.data, "what if i posted here");
+      // console.log(response.data, "what if i posted here");
       return response.data;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+// To UPDATE a POST
+export const updatePost = createAsyncThunk(
+  "post/updatePost",
+  async ({ data, axiosPrivate, config, postId }, { rejectWithValue }) => {
+    console.log(data, "data chk for update");
+    try {
+      const response = await axiosPrivate.put(`/posts/${postId}`, data, config);
+      console.log(response.data, "what if i posted here");
+      return response.data.updatedPost;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -182,6 +197,23 @@ const postSlice = createSlice({
         state.posts.unshift(action.payload);
       })
       .addCase(createPost.rejected, (state, action) => {
+        state.status = "fail";
+        state.error = action.error.message;
+      })
+      .addCase(updatePost.pending, (state, action) => {
+        state.status = "loading";
+      })
+      .addCase(updatePost.fulfilled, (state, action) => {
+        state.status = "success";
+
+        const { _id } = action.payload;
+
+        const postIndex = state.posts.findIndex((post) => post._id === _id);
+        if (postIndex !== -1) {
+          state.posts[postIndex] = action.payload;
+        }
+      })
+      .addCase(updatePost.rejected, (state, action) => {
         state.status = "fail";
         state.error = action.error.message;
       })

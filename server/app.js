@@ -13,7 +13,6 @@ import { mongooseConnection } from "./config/database.js";
 import multer from "multer";
 import { credentials } from "./middlewares/credentials.js";
 
-
 // to be used just before cors
 app.use(credentials);
 // CORS
@@ -25,15 +24,15 @@ const __filename = new URL(import.meta.url).pathname;
 const __dirname = path.dirname(__filename);
 app.use("/images", express.static(path.join(__dirname, "public/images")));
 
-
-
-import userRoute from './routes/users.js';
-import authRoute from './routes/auth.js';
-import adminAuthRoute from './routes/adminAuth.js';
-import postRoute from './routes/posts.js';
-import tripRoute from './routes/trip.js';
-import refreshRoute from './routes/refresh.js';
-import adminRoute from './routes/admin.js';
+import userRoute from "./routes/users.js";
+import authRoute from "./routes/auth.js";
+import adminAuthRoute from "./routes/adminAuth.js";
+import postRoute from "./routes/posts.js";
+import tripRoute from "./routes/trip.js";
+import refreshRoute from "./routes/refresh.js";
+import adminRoute from "./routes/admin.js";
+import chatRoute from "./routes/chat.js";
+import conversationRoute from "./routes/conversation.js";
 
 dotenv.config();
 
@@ -58,6 +57,8 @@ app.use("/api/posts", postRoute);
 app.use("/api/trip", tripRoute);
 app.use("/api/refresh", refreshRoute);
 app.use("/api/admin", adminRoute);
+app.use("/api/chat", chatRoute);
+app.use("/api/conversations", conversationRoute);
 
 app.get("/message", (req, res) => {
   res.json({ message: "Hello from server" });

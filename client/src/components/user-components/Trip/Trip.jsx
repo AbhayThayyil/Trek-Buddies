@@ -133,7 +133,7 @@ const Trip = () => {
             })
 
             .map((trip) => (
-              <Card sx={{ minWidth: 275, margin: "10px" }}>
+              <Card sx={{ minWidth: 275, margin: "10px" }} key={trip._id}>
                 <CardContent>
                   <Typography variant="h5">{trip?.tripName}</Typography>
                   <Typography variant="h6">
@@ -168,10 +168,10 @@ const Trip = () => {
                   >
                     <Typography>Trip Mates:</Typography>
                     <AvatarGroup max={4}>
-                      {trip?.tripMates?.map((element) => (
+                      {trip?.tripMates?.map((element, index) => (
                         <Avatar
-                          alt={element._id}
-                          key={element._id}
+                          key={index}
+                          alt="Avatar"
                           src={
                             element.profilePicture
                               ? element.profilePictureURL

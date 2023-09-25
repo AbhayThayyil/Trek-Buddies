@@ -25,7 +25,7 @@ export const createPost = async (req, res) => {
   console.log("req.body", req.body);
 
   try {
-    const { owner, description,tags,location } = req.body;
+    const { owner, description, tags, location } = req.body;
     let imageName;
     console.log("req.file", req.file);
 
@@ -50,7 +50,7 @@ export const createPost = async (req, res) => {
         description,
         image: imageName,
         tags,
-        location
+        location,
       }).populate("owner");
 
       const newPost = await newPostObject.save();
@@ -61,7 +61,7 @@ export const createPost = async (req, res) => {
         owner,
         description,
         tags,
-        location
+        location,
       }).populate("owner");
 
       const newPost = await newPostObject.save();
@@ -76,15 +76,46 @@ export const createPost = async (req, res) => {
 // Updating a post
 
 export const updatePost = async (req, res) => {
+  console.log(req.body, "post edit body");
+  console.log("req.file", req.file);
   try {
     const postToUpdate = await Post.findById(req.params.postId);
-
+    let imageName;
     if (!postToUpdate) {
       res.status(400).json({ error: "Post not found" });
     } else {
       if (postToUpdate.owner.toString() === req.userId) {
-        await postToUpdate.updateOne({ $set: req.body });
-        res.status(200).json({ message: "Post updated successfully" });
+        if (req.file) {
+          const contentType = "image/webp";
+          const buffer = await sharp(req.file.buffer).webp().toBuffer();
+          imageName = randomImageName();
+          const params = {
+            Bucket: bucketName,
+            Key: imageName,
+            Body: buffer,
+            ContentType: contentType,
+          };
+          const command = new PutObjectCommand(params);
+          await s3.send(command);
+
+          await postToUpdate.updateOne({
+            $set: {
+              description: req.body.description,
+              image: imageName,
+            },
+          });
+        } else {
+          await postToUpdate.updateOne({
+            $set: {
+              description: req.body.description,
+            },
+          });
+        }
+
+        const updatedPost = await Post.findById(req.params.postId);
+        res
+          .status(200)
+          .json({ message: "Post updated successfully", updatedPost });
       } else {
         res.status(403).json({ error: "You cannot update other's post" });
       }
