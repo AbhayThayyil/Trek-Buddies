@@ -110,14 +110,18 @@ const Navigationbar = () => {
                 <HomeIcon />
               </IconButton>
             </Link>
+
             <IconButton sx={{ color: "white" }}>
               <PersonIcon />
             </IconButton>
-            <IconButton sx={{ color: "white" }}>
-              <Badge badgeContent={4} color="primary">
-                <ChatIcon />
-              </Badge>
-            </IconButton>
+            <Link to="/chat" style={{ textDecoration: "none" }}>
+              <IconButton sx={{ color: "white" }}>
+                <Badge badgeContent={4} color="primary">
+                  <ChatIcon />
+                </Badge>
+              </IconButton>
+            </Link>
+
             <IconButton sx={{ color: "white" }}>
               <Badge badgeContent={4} color="primary">
                 <NotificationsActiveIcon />

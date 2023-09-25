@@ -196,8 +196,8 @@ const Post = ({ post, development }) => {
                 sx={{ bgcolor: "red[500]" }}
                 aria-label="recipe"
                 src={
-                  currentUser.profilePicture
-                    ? currentUser.profilePictureURL
+                  currentUser?.profilePicture
+                    ? currentUser?.profilePictureURL
                     : "/Images/noUser.jpg"
                 }
               />
@@ -334,6 +334,8 @@ const Post = ({ post, development }) => {
                 name="comment"
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
+                autoComplete="off"
+                
               />
               <IconButton onClick={handleComment} type="submit">
                 <SendIcon

@@ -103,7 +103,7 @@ const Share = () => {
     setUploadedImage(null);
     setDescription("");
     setTags(null);
-    setLocation('')
+    setLocation("");
   };
 
   // console.log(tags, "tags chk");
@@ -171,8 +171,8 @@ const Share = () => {
           <Avatar
             alt="user Profile pic"
             src={
-              currentUser.profilePicture
-                ? currentUser.profilePictureURL
+              currentUser?.profilePicture
+                ? currentUser?.profilePictureURL
                 : "/Images/noUser.jpg"
             }
             sx={{ marginRight: "10px" }}
@@ -270,19 +270,16 @@ const Share = () => {
               marginRight={3}
               marginLeft={3}
               sx={{ cursor: "pointer" }}
+              onClick={handleTagClick}
             >
-              <LocalOfferIcon
-                className="shareIcon"
-                sx={{ color: "blue" }}
-                onClick={handleTagClick}
-              />
+              <LocalOfferIcon className="shareIcon" sx={{ color: "blue" }} />
               <span className="shareOptionText">Tag </span>
-              <TagShareModal
-                open={tagModalOpen}
-                close={handleTagCancel}
-                handleConfirm={handleTagConfirm}
-              />
             </Box>
+            <TagShareModal
+              open={tagModalOpen}
+              close={handleTagCancel}
+              handleConfirm={handleTagConfirm}
+            />
             <Box
               className="shareOption"
               display={"flex"}
@@ -290,19 +287,16 @@ const Share = () => {
               marginRight={3}
               marginLeft={3}
               sx={{ cursor: "pointer" }}
+              onClick={handleLocationClick}
             >
-              <LocationOnIcon
-                className="shareIcon"
-                sx={{ color: "green" }}
-                onClick={handleLocationClick}
-              />
+              <LocationOnIcon className="shareIcon" sx={{ color: "green" }} />
               <span className="shareOptionText">Location </span>
-              <LocationShareModal
-                open={locationModalOpen}
-                close={handleLocationCancel}
-                handleConfirm={handleLocationConfirm}
-              />
             </Box>
+            <LocationShareModal
+              open={locationModalOpen}
+              close={handleLocationCancel}
+              handleConfirm={handleLocationConfirm}
+            />
           </Box>
           <Button
             className="shareButton"

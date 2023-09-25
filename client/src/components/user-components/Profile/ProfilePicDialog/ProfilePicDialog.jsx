@@ -76,7 +76,7 @@ const ProfilePicDialog = ({ open, close, profileOwner, handleConfirm }) => {
                 <CardMedia
                   component="img"
                   height="300"
-                  image={profileOwner.profilePicture?profileOwner.profilePictureURL:"/Images/noUser.jpg"}
+                  image={profileOwner?.profilePicture?profileOwner?.profilePictureURL:"/Images/noUser.jpg"}
                   alt="profilePic"
                   sx={{ objectFit: "contain" }}
                 />

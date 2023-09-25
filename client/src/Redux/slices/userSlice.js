@@ -59,7 +59,7 @@ export const userInfoFromId = createAsyncThunk(
   async ({ userId, axiosPrivate }, { rejectWithValue }) => {
     try {
       const response = await axiosPrivate.get(`/users/${userId}`);
-      console.log(response.data, "fetch a single user info ");
+      // console.log(response.data, "fetch a single user info ");
       return response.data;
     } catch (err) {
       return rejectWithValue(err);
@@ -78,7 +78,7 @@ export const updateProfilePicture = createAsyncThunk(
         data,
         config
       );
-      console.log(response.data, "response to upload profile pic chk");
+      // console.log(response.data, "response to upload profile pic chk");
       return response.data;
     } catch (err) {
       return rejectWithValue(err);
@@ -97,7 +97,7 @@ export const updateCoverPicture = createAsyncThunk(
         data,
         config
       );
-      console.log(response.data, "response to upload Cover pic chk");
+      // console.log(response.data, "response to upload Cover pic chk");
       return response.data;
     } catch (err) {
       return rejectWithValue(err);
@@ -112,7 +112,7 @@ export const getAllFriendsData = createAsyncThunk(
   async ({ axiosPrivate }, { rejectWithValue }) => {
     try {
       const response = await axiosPrivate.get("/users/friends/all");
-      console.log(response.data, "response for friends list");
+      // console.log(response.data, "response for friends list");
       return response.data;
     } catch (err) {
       return rejectWithValue(err);

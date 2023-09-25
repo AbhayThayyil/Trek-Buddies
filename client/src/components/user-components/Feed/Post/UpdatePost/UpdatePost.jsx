@@ -5,47 +5,78 @@ import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
-import { useSelector } from "react-redux";
-import { getAllPosts } from "../../../../../Redux/slices/postSlice";
-import { Avatar, Box, InputBase, TextField } from "@mui/material";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchPosts,
+  getAllPosts,
+  updatePost,
+} from "../../../../../Redux/slices/postSlice";
+import { Avatar, Box, InputBase, Stack, TextField } from "@mui/material";
 import { selectAllUsers } from "../../../../../Redux/slices/userSlice";
 import CancelIcon from "@mui/icons-material/Cancel";
 import InsertPhotoIcon from "@mui/icons-material/InsertPhoto";
 import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
+import useAxiosPrivate from "../../../../../hooks/useAxiosPrivate";
 
 const UpdatePost = ({ open, handleClose, handleConfirm, postId }) => {
+  const dispatch = useDispatch();
+  const axiosPrivate = useAxiosPrivate();
+
   const user = useSelector(selectAllUsers);
   const posts = useSelector(getAllPosts);
-  const postToUpdate = posts.filter((post) => post._id === postId);
+  const postToUpdate = posts.find((post) => post._id === postId);
 
-  const [updateDescription, setUpdateDescription] = useState(postToUpdate[0].description);
-  const imageUpdateRef = useRef();
-  const [uploadedUpdateImage, setUploadedUpdateImage] = useState(null);
+  console.log(postToUpdate, "post to update chk");
 
-  const handleUpdateImageCancel = () => {
-    setUploadedUpdateImage(null);
+  // const [editUploadedImage, setEditUploadedImage] = useState(
+  //   postToUpdate?.imageURL || null
+  // );
+  const [editUploadedImage, setEditUploadedImage] = useState(null);
+
+  const [editTags, setEditTags] = useState(null);
+  const [editLocation, setEditLocation] = useState("");
+  const [editDescription, setEditDescription] = useState(
+    postToUpdate?.description || ""
+  );
+
+  console.log(editDescription, "desc chk");
+
+  const handleDescriptionChange = (e) => {
+    setEditDescription(e.target.value);
   };
 
-  const onUpdateImageChange = (e) => {
+  const clearUploadedImage = () => {
+    setEditUploadedImage(null);
+  };
+
+  const editImageRef = useRef();
+
+  const onImageChange = (e) => {
     if (e.target.files && e.target.files[0]) {
       console.log(e.target.files[0], "image check in files");
-      setUploadedUpdateImage(e.target.files[0]);
+      // const imageURL = URL.createObjectURL(e.target.files[0]);
+      // setEditUploadedImage(imageURL);
+      setEditUploadedImage(e.target.files[0]);
     }
   };
 
-  const handleUpdateSubmit = async (e) => {
-    e.preventDefault();
+  // to reset all fields after submit
+  const resetShare = () => {
+    setEditUploadedImage(null);
+    setEditDescription("");
+  };
 
-    if (uploadedUpdateImage) {
-      const data = new FormData();
-
-      data.append("name", uploadedUpdateImage.name);
-      data.append("owner", user._id);
-      data.append("description", updateDescription);
-      data.append("file", uploadedUpdateImage);
-      console.log(data.get("file"), "file check");
-      console.log(data, "data check");
+  // to submit the edits
+  const handleSubmitUpdate = () => {
+    const data = new FormData();
+    data.append("owner", user._id);
+    data.append("description", editDescription);
+    if (editUploadedImage) {
+      data.append("name", editUploadedImage.name);
+      data.append("file", editUploadedImage);
+      // console.log(data.get("file"), "file check");
+      // console.log(data, "data check");
 
       const config = {
         headers: {
@@ -53,14 +84,22 @@ const UpdatePost = ({ open, handleClose, handleConfirm, postId }) => {
         },
       };
 
-      dispatch(createPost({ data, axiosPrivate, config })).then(() => {
-        dispatch(fetchPosts({ userId: user._id, axiosPrivate }));
-      });
+      console.log(data, "data chk ");
+
+      dispatch(
+        updatePost({ data, axiosPrivate, config, postId: postToUpdate._id })
+      ).then(() => dispatch(fetchPosts({ userId: user._id, axiosPrivate })));
+      resetShare();
+    } else {
+      dispatch(
+        updatePost({ data, axiosPrivate, postId: postToUpdate._id })
+      ).then(() => dispatch(fetchPosts({ userId: user._id, axiosPrivate })));
       resetShare();
     }
+
+    handleConfirm();
   };
 
-  console.log(postToUpdate, "post to update");
   return (
     <>
       <Dialog
@@ -71,72 +110,59 @@ const UpdatePost = ({ open, handleClose, handleConfirm, postId }) => {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">Update Post </DialogTitle>
+        <DialogTitle id="alert-dialog-title">Update Post</DialogTitle>
         <DialogContent>
-          <Box>
-            <Box className="shareTop" display={"flex"} alignItems={"center"}>
-              <Avatar
-                alt="user Profile pic"
-                src={""}
-                sx={{ marginRight: "10px" }}
-              />
-              <TextField
-                name="description"
-                placeholder={postToUpdate[0].description}
-                sx={{ width: "80%" }}
-                value={updateDescription}
-                onChange={(e) => setUpdateDescription(e.target.value)}
-              />
-            </Box>
-            {uploadedUpdateImage ? (
+          <DialogContentText sx={{ marginBottom: "20px" }}>
+            Update this post here
+          </DialogContentText>
+          <Stack sx={{ height: "500px", gap: "20px" }}>
+            <TextField
+              id="description"
+              label="Description"
+              placeholder="Enter Description"
+              value={editDescription}
+              onChange={handleDescriptionChange}
+            />
+            {!editUploadedImage && (
               <Box
-                className="shareImageContainer"
-                sx={{ padding: "0 20px 10px 20px", position: "relative" }}
+                id="selectedImage"
+                position={"relative"}
+                sx={{ display: "flex", justifyContent: "center" }}
               >
                 <img
-                  src={URL.createObjectURL(uploadedUpdateImage)}
-                  alt="shareImage"
-                  className="shareImage"
-                  style={{
-                    width: "100%",
-                    objectFit: "cover",
-                    marginTop: "20px",
-                  }}
+                  src={postToUpdate?.imageURL}
+                  alt="uploadedImage"
+                  style={{ maxWidth: "100%", width: "700px", height: "auto" }}
                 />
                 <CancelIcon
-                  className="shareImageCancel"
-                  onClick={handleUpdateImageCancel}
+                  onClick={clearUploadedImage}
                   sx={{
                     position: "absolute",
                     top: 0,
-                    right: "20px",
+                    right: 0,
                     cursor: "pointer",
                     opacity: "0.7",
                   }}
                 />
               </Box>
-            ) : (
+            )}
+            {editUploadedImage && (
               <Box
-                className="shareImageContainer"
-                sx={{ padding: "0 20px 10px 20px", position: "relative" }}
+                id="selectedImage"
+                position={"relative"}
+                sx={{ display: "flex", justifyContent: "center" }}
               >
                 <img
-                  src={postToUpdate[0].imageURL}
-                  alt="shareImage"
-                  className="shareImage"
-                  style={{
-                    width: "100%",
-                    objectFit: "cover",
-                    marginTop: "20px",
-                  }}
+                  src={URL.createObjectURL(editUploadedImage)}
+                  alt="uploadedImage"
+                  style={{ maxWidth: "100%", width: "700px", height: "auto" }}
                 />
                 <CancelIcon
-                  className="shareImageCancel"
-                  onClick={handleUpdateImageCancel}
+                  onClick={clearUploadedImage}
                   sx={{
                     position: "absolute",
                     top: 0,
-                    right: "20px",
+                    right: 0,
                     cursor: "pointer",
                     opacity: "0.7",
                   }}
@@ -151,7 +177,7 @@ const UpdatePost = ({ open, handleClose, handleConfirm, postId }) => {
               <Box
                 className="shareOptions"
                 display={"flex"}
-                // justifyContent={"space-evenly"}
+                justifyContent={"space-between"}
                 width={"100%"}
               >
                 <Box
@@ -165,27 +191,26 @@ const UpdatePost = ({ open, handleClose, handleConfirm, postId }) => {
                   <InsertPhotoIcon
                     className="shareIcon"
                     sx={{ color: "red" }}
-                    onClick={() => imageUpdateRef.current.click()}
+                    onClick={() => editImageRef.current.click()}
                   />
-                  <label htmlFor="image">
-                    <span
-                      className="shareOptionText"
-                      style={{ cursor: "pointer" }}
-                    >
-                      Photo{" "}
-                    </span>
-                  </label>
+                  <span
+                    className="shareOptionText"
+                    style={{ cursor: "pointer" }}
+                  >
+                    Photo{" "}
+                  </span>
                   <input
                     style={{ display: "none" }}
                     type="file"
                     name="image"
                     key={Date.now()}
-                    ref={imageUpdateRef}
-                    id="Updatemage"
-                    accept=".png,.jpeg,.jpg"
-                    onChange={onUpdateImageChange}
+                    ref={editImageRef}
+                    id="image"
+                    accept="image/*"
+                    onChange={onImageChange}
                   />
                 </Box>
+                // TODO : DO THE EDIT FUNCTIONALITIES OF TAG AND LOCATION
                 <Box
                   className="shareOption"
                   display={"flex"}
@@ -215,35 +240,14 @@ const UpdatePost = ({ open, handleClose, handleConfirm, postId }) => {
                   <span className="shareOptionText">Location </span>
                 </Box>
               </Box>
-              {/* <Button
-                className="shareButton"
-                type="submit"
-                sx={{
-                  color: "white",
-                  backgroundColor: "#189AB4",
-                  marginRight: "20px",
-                  "&:hover": {
-                    backgroundColor: "#75E6DA",
-                  },
-                }}
-                onClick={handleSubmit}
-              >
-                Share
-              </Button> */}
             </Box>
-          </Box>
+          </Stack>
         </DialogContent>
         <DialogActions>
           <Button color="error" onClick={handleClose}>
             Cancel
           </Button>
-          <Button
-            color="success"
-            onClick={() => {
-                handleUpdateSubmit, handleConfirm;
-            }}
-            autoFocus
-          >
+          <Button color="success" autoFocus onClick={handleSubmitUpdate}>
             Confirm
           </Button>
         </DialogActions>

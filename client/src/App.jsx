@@ -14,6 +14,7 @@ import Missing from "./components/user-components/404/404";
 
 // authentication for protected route
 import RequireAuth from "./components/RequireAuth";
+import PersistLogin from "./components/user-components/PersistLogin";
 
 import Users from "./components/Users";
 import ProfilePage from "./pages/user-pages/ProfilePage/ProfilePage";
@@ -22,7 +23,7 @@ import TripPage from "./pages/user-pages/TripPage/TripPage";
 import AdminLayout from "./pages/admin-pages/adminLayout";
 import PostsListPage from "./pages/admin-pages/PostsListPage/PostsListPage";
 import ReportsListPage from "./pages/admin-pages/ReportsListPage/ReportsListPage";
-import PersistLogin from "./components/user-components/PersistLogin";
+import ChatPage from "./pages/user-pages/ChatPage/ChatPage";
 
 function App() {
   return (
@@ -30,16 +31,17 @@ function App() {
       <LocalizationProvider dateAdapter={AdapterDayjs}>
         <Routes>
           <Route path="/" element={<Layout />}>
-            {/* USER ROUTES */}
+            {/* PUBLIC USER ROUTES */}
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<Signup />} />
 
             {/* PROTECTED ROUTES */}
-              <Route element={<PersistLogin />}>
-            <Route element={<RequireAuth />}>
+            <Route element={<PersistLogin />}>
+              <Route element={<RequireAuth />}>
                 <Route path="/" element={<Homepage />} />
                 <Route path="/listUsers" element={<Users />} />
                 <Route path="/trip" element={<TripPage />} />
+                <Route path="/chat" element={<ChatPage />} />
               </Route>
             </Route>
 
@@ -59,7 +61,7 @@ function App() {
                 />
               </Route>
             </Route>
-
+            {/* Catch all (Missing mostly ) */}
             <Route path="*" element={<Missing />} />
           </Route>
         </Routes>
