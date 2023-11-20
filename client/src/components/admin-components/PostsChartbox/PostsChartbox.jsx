@@ -14,6 +14,8 @@ const PostsChartbox = () => {
 
   const posts = useSelector(adminGetAllPosts);
 
+  console.log(posts,"posts chk");
+
   useEffect(() => {
     dispatch(getPosts({ axiosPrivate }));
   }, [dispatch, axiosPrivate]);

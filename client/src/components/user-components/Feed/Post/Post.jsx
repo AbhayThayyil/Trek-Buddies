@@ -150,7 +150,7 @@ const Post = ({ post, development }) => {
   // Optimize the effect by memoizing the dispatch function
   const fetchUserData = useCallback(() => {
     dispatch(fetchUser({ post, axiosPrivate }));
-  }, [dispatch, post]);
+  }, [dispatch, post, axiosPrivate]);
 
   useEffect(() => {
     fetchUserData();
@@ -310,7 +310,10 @@ const Post = ({ post, development }) => {
               checked={isLiked}
             />
           </IconButton>
-          <Typography> {like} Likes</Typography>
+          <Typography>
+            {" "}
+            {like <= 1 ? `${like} Like` : `${like} Likes`}
+          </Typography>
 
           <IconButton onClick={() => setViewComments(!viewComments)}>
             <CommentOutlinedIcon />
@@ -335,7 +338,6 @@ const Post = ({ post, development }) => {
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 autoComplete="off"
-                
               />
               <IconButton onClick={handleComment} type="submit">
                 <SendIcon

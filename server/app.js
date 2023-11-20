@@ -3,15 +3,14 @@ import cookieParser from "cookie-parser";
 const app = express();
 
 import path from "path";
-import mongoose from "mongoose";
 import dotenv from "dotenv";
 import helmet from "helmet";
 import cors from "cors";
 import { corsOptions } from "./config/cors/corsOptions.js";
 import morgan from "morgan";
 import { mongooseConnection } from "./config/database.js";
-import multer from "multer";
 import { credentials } from "./middlewares/credentials.js";
+import { initializeSocket } from "./socket.js";
 
 // to be used just before cors
 app.use(credentials);
@@ -57,7 +56,7 @@ app.use("/api/posts", postRoute);
 app.use("/api/trip", tripRoute);
 app.use("/api/refresh", refreshRoute);
 app.use("/api/admin", adminRoute);
-app.use("/api/chat", chatRoute);
+app.use("/api/chats", chatRoute);
 app.use("/api/conversations", conversationRoute);
 
 app.get("/message", (req, res) => {
@@ -65,6 +64,7 @@ app.get("/message", (req, res) => {
 });
 
 const port = process.env.PORT;
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log(`Server running at port ${port} !`);
 });
+const io = initializeSocket(server);

@@ -10,10 +10,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { useParams } from "react-router-dom";
 
 import {
+  followUser,
   getAllUsersData,
   selectAllUsers,
-  updateFollow,
-  updateUnfollow,
+  unfollowUser,
   userInfoFromId,
 } from "../../../Redux/slices/userSlice";
 import { getAllPosts } from "../../../Redux/slices/postSlice";
@@ -24,12 +24,11 @@ const Profile = () => {
   const dispatch = useDispatch();
 
   const userId = useParams().userId; // get userId from params
-
-  // useEffect(() => {
-  //   dispatch(userInfoFromId({ axiosPrivate, userId }));
-  // }, [userId]);
-
   const axiosPrivate = useAxiosPrivate();
+
+  useEffect(() => {
+    dispatch(userInfoFromId({ axiosPrivate, userId }));
+  }, [userId, dispatch, axiosPrivate]);
 
   const posts = useSelector(getAllPosts);
 
@@ -92,6 +91,22 @@ const Profile = () => {
   const [followersLength, setFollowersLength] = useState(null);
   const [followingLength, setFollowingLength] = useState(null);
 
+  const handleFollow = async () => {
+    console.log(followed, "followed checking");
+    try {
+      if (followed) {
+        dispatch(unfollowUser({ axiosPrivate, userId }));
+        setFollowersLength((prev) => prev - 1); // Decrease followers count
+      } else {
+        dispatch(followUser({ axiosPrivate, userId }));
+        setFollowersLength((prev) => prev + 1); // Increase followers count
+      }
+    } catch (err) {
+      console.log(err);
+    }
+    setFollowed(!followed);
+  };
+
   useEffect(() => {
     const fetchUser = async () => {
       const response = await axiosPrivate.get(`/users/${userId}`);
@@ -103,21 +118,6 @@ const Profile = () => {
     fetchUser();
   }, [userId]);
 
-  const handleFollow = async () => {
-    try {
-      if (followed) {
-        await axiosPrivate.put(`/users/${userId}/unfollow`);
-        dispatch(updateUnfollow(userId));
-      } else {
-        await axiosPrivate.put(`/users/${userId}/follow`);
-        dispatch(updateFollow(userId));
-      }
-    } catch (err) {
-      console.log(err);
-    }
-    setFollowed(!followed);
-  };
-
   return (
     <>
       <Box flex={4} p={2}>
@@ -128,7 +128,11 @@ const Profile = () => {
           >
             <img
               className="profileCoverPicture"
-              src={currentUser.coverPicture ? currentUser.coverPictureURL : "/Images/noCover.jpg"}
+              src={
+                currentUser.coverPicture
+                  ? currentUser.coverPictureURL
+                  : "/Images/noCover.jpg"
+              }
               alt="coverPic"
               onClick={handleCoverPicClick}
             />
@@ -141,7 +145,9 @@ const Profile = () => {
             <img
               className="profileUserPicture"
               src={
-                currentUser.profilePicture ? currentUser.profilePictureURL : "/Images/noUser.jpg"
+                currentUser.profilePicture
+                  ? currentUser.profilePictureURL
+                  : "/Images/noUser.jpg"
               }
               alt="profilePic"
               onClick={handleProfilePicClick}
@@ -174,7 +180,7 @@ const Profile = () => {
               fontWeight={300}
               color={"darkgray"}
             >
-              Software Developer
+              {currentUser?.bio}
             </Typography>
           </Box>
           <Box
@@ -205,6 +211,11 @@ const Profile = () => {
               </Button>
             )}
           </Box>
+          {currentUser._id !== user._id && (
+            <Box sx={{ display: "flex", justifyContent: "center" }}>
+              <Button>Start a Chat</Button>
+            </Box>
+          )}
         </Box>
 
         <Box className="profilePosts" marginTop={5} display={"flex"}>
@@ -212,7 +223,7 @@ const Profile = () => {
 
           <Grid container spacing={2} justifyContent={"center"}>
             <Grid item xs={12} md={6} flexDirection={"row"}>
-              <Feed userId={userId} />
+              <Feed userId={currentUser._id} />
             </Grid>
           </Grid>
         </Box>

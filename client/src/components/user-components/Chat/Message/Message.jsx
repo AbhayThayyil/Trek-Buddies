@@ -1,7 +1,8 @@
 import { Avatar, Box, Typography } from "@mui/material";
 import React from "react";
+import TimeAgo from "timeago-react";
 
-const Message = ({ own }) => {
+const Message = ({ message,own }) => {
   const messageAllignment = own ? "flex-end" : "flex-start";
   const messageBackgroundColor = own ? "#EDF0F5" : "#189AB4";
   const messageTextColor = own ? "black" : "white";
@@ -30,8 +31,7 @@ const Message = ({ own }) => {
               maxWidth: "300px",
             }}
           >
-            This is a messageaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaaa
-            aaaaaaaaaaaaaaaaa aaaaaaaaaaaaaaaaaaa
+            {message?.message}
           </Typography>
         </Box>
         <Box
@@ -39,7 +39,7 @@ const Message = ({ own }) => {
           sx={{ fontSize: "12px", marginTop: "10px" }}
         >
           {" "}
-          1 hour ago
+          <TimeAgo datetime={message?.createdAt} />
         </Box>
       </Box>
     </>

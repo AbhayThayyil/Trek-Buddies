@@ -201,7 +201,8 @@ export const postAdminLogin = async (req, res) => {
 
 export const userLogout = async (req, res) => {
   const cookies = req.cookies;
-  if (!cookies?.jwt) return res.sendStatus(204);
+  console.log(cookies,"cookies chk");
+  if (!cookies?.jwt) return res.sendStatus(204);  // No content
   const refreshToken = cookies.jwt;
 
   // Check if refresh Token is in DB
@@ -212,7 +213,7 @@ export const userLogout = async (req, res) => {
       sameSite: "None",
       secure: true,
     });
-    return res.sendStatus(204);
+    return res.status(204).json("Logged out successfully");
   }
 
   //Delete the refresh Token in DB

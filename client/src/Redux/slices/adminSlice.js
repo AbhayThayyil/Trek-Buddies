@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk, current } from "@reduxjs/toolkit";
+import authService from "../../hooks/authService";
 
 const initialState = {
+  adminInfo: {},
   users: [],
   posts: [],
   reports: [],
@@ -8,13 +10,23 @@ const initialState = {
   error: null,
 };
 
+export const updateAdmin = createAsyncThunk(
+  "admin/updateAdmin",
+  async (userData, role) => {
+    const response = await authService.login(userData, role);
+
+    console.log(response, "userslice response");
+    return response;
+  }
+);
+
 // To GET the list of USERS
 export const getUsers = createAsyncThunk(
   "admin/getUsers",
   async ({ axiosPrivate }, { rejectWithValue }) => {
     try {
       const response = await axiosPrivate.get("/admin/usersList");
-      // console.log(response.data.users,"response for users list for admin");
+      console.log(response.data.users, "response for users list for admin");
       return response.data.users;
     } catch (err) {
       return rejectWithValue(err);
@@ -44,7 +56,7 @@ export const getReports = createAsyncThunk(
     try {
       const response = await axiosPrivate.get("/admin/reportsList");
       // console.log(response.data, "reponse chk");
-      return response.data.allReports
+      return response.data.allReports;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -71,9 +83,25 @@ export const blockUser = createAsyncThunk(
 const adminSlice = createSlice({
   name: "admin",
   initialState,
-  reducers: {},
+  reducers: {
+    updateAdminAccessToken: (state, action) => {
+      state.adminInfo.accessToken = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
+      .addCase(updateAdmin.pending, (state, action) => {
+        state.status = "loading";
+      })
+      .addCase(updateAdmin.fulfilled, (state, action) => {
+        state.status = "success";
+        state.adminInfo = action.payload.result;
+        // state.userInfo.accessToken = action.payload.accessToken;
+      })
+      .addCase(updateAdmin.rejected, (state, action) => {
+        state.status = "fail";
+        state.error = action.error.message;
+      })
       .addCase(getUsers.pending, (state, action) => {
         state.status = "loading";
       })
@@ -123,8 +151,10 @@ const adminSlice = createSlice({
   },
 });
 
+export const { updateAdminAccessToken } = adminSlice.actions;
+export const selectAdminInfo=(state)=>state.admin.adminInfo
 export const adminGetAllUsers = (state) => state.admin.users;
 export const adminGetAllPosts = (state) => state.admin.posts;
-export const adminGetAllReports=(state)=>state.admin.reports
+export const adminGetAllReports = (state) => state.admin.reports;
 
 export default adminSlice.reducer;

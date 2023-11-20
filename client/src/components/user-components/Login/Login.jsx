@@ -4,12 +4,13 @@ import {
   Button,
   Container,
   CssBaseline,
+  FormControlLabel,
   Grid,
   TextField,
   Typography,
 } from "@mui/material";
-import React from "react";
-import axios from "../../../utils/axios";
+import Checkbox from "@mui/material/Checkbox";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { DevTool } from "@hookform/devtools";
@@ -21,17 +22,30 @@ import "./login.css";
 import { useDispatch, useSelector } from "react-redux";
 import {
   updateUser,
-  selectAllUsers,
   selectAllStatus,
-  selectAllError,
   getAllUsersInfo,
+  selectPersistState,
+  setPersist,
 } from "../../../Redux/slices/userSlice";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 
 const Login = () => {
   const dispatch = useDispatch();
-  const axiosPrivate=useAxiosPrivate()
+  const axiosPrivate = useAxiosPrivate();
   const loading = useSelector(selectAllStatus);
+
+  const persist = useSelector(selectPersistState);
+
+  console.log(persist, "persist state from redux check");
+
+  const togglePersist = () => {
+    const newPersistValue = !persist;
+    dispatch(setPersist(newPersistValue));
+  };
+
+  useEffect(() => {
+    localStorage.setItem("persist", persist);
+  }, [persist]);
 
   const form = useForm({
     defaultValues: {
@@ -174,6 +188,17 @@ const Login = () => {
                 >
                   Sign In
                 </Button>
+                <Box
+                  className="persistCheck"
+                  sx={{ display: "flex", justifyContent: "center" }}
+                >
+                  <FormControlLabel
+                    control={
+                      <Checkbox onChange={togglePersist} checked={persist} />
+                    }
+                    label="Remember me"
+                  />
+                </Box>
                 <Grid container>
                   <Grid item>
                     Don't have an account?

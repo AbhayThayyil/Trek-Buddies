@@ -3,7 +3,7 @@ import { logOut } from "./userSlice";
 
 const initialState = {
   trips: [],
-  searchData: [],
+  searchData: [], // for searching in trips
   status: "idle", // idle,loading,success,fail
   error: null,
 };

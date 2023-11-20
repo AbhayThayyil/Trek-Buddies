@@ -22,6 +22,11 @@ import {
   searchTrip,
 } from "../../../Redux/slices/tripSlice";
 import { selectAllUsers } from "../../../Redux/slices/userSlice";
+import ConfirmDelete from "../DialogComponents/ConfirmDelete";
+
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { showToast } from "../../../helpers/ToastHelper";
 
 const Trip = () => {
   const axiosPrivate = useAxiosPrivate();
@@ -84,6 +89,7 @@ const Trip = () => {
 
   return (
     <>
+      <ToastContainer />
       <Box flex={3.5} p={2}>
         <Box
           className="tripCreate"
