@@ -89,16 +89,7 @@ const Sidebar = () => {
               </ListItemButton>
             </ListItem>
 
-            <Link to={"/listUsers"}>
-              <ListItem disablePadding>
-                <ListItemButton >
-                  <ListItemIcon>
-                    <ApartmentIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="list users" />
-                </ListItemButton>
-              </ListItem>
-            </Link>
+            
           </List>
         </Box>
       </Box>

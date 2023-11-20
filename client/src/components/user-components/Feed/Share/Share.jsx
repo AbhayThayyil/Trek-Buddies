@@ -184,6 +184,7 @@ const Share = () => {
             sx={{ width: "80%" }}
             onChange={(e) => setDescription(e.target.value)}
             value={description}
+            autoComplete="off"
           />
         </Box>
         <hr className="shareHr" />

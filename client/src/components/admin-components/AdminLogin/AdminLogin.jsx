@@ -17,7 +17,8 @@ import "react-toastify/dist/ReactToastify.css";
 import { showToast } from "../../../helpers/ToastHelper";
 import axios from "../../../utils/axios";
 import { useDispatch, useSelector } from "react-redux";
-import { selectAllStatus, updateUser } from "../../../Redux/slices/userSlice";
+import { selectAllStatus } from "../../../Redux/slices/userSlice";
+import { updateAdmin } from "../../../Redux/slices/adminSlice";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -42,7 +43,7 @@ const AdminLogin = () => {
     console.log(data);
     
 
-    dispatch(updateUser({data,role:'adminAuth'}))
+    dispatch(updateAdmin({data,role:'adminAuth'}))
       .unwrap()
       .then((response) => {
         if (response) {

@@ -2,16 +2,18 @@ import React, { useEffect, useState } from "react";
 import Post from "./Post/Post";
 import { Box, Button } from "@mui/material";
 import Share from "./Share/Share";
-import { Link } from "react-router-dom";
-import axios from "../../../utils/axios";
 
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { useSelector, useDispatch } from "react-redux";
 
-import { getAllUsersInfo, selectAllUsers } from "../../../Redux/slices/userSlice";
+import {
+  getAllUsersInfo,
+  selectAllUsers,
+} from "../../../Redux/slices/userSlice";
 import { fetchPosts, getAllPosts } from "../../../Redux/slices/postSlice";
 
 const Feed = ({ userId }) => {
+  // console.log(userId, "id check");
   const axiosPrivate = useAxiosPrivate();
 
   const dispatch = useDispatch();
@@ -26,23 +28,39 @@ const Feed = ({ userId }) => {
 
   const PF = import.meta.env.VITE_APP_PUBLIC_FOLDER;
 
+  
+
   useEffect(() => {
-    dispatch(fetchPosts({ userId, axiosPrivate }));
+    dispatch(fetchPosts({ axiosPrivate }));
 
     // console.log('fetch posts useeffect runs');
-  }, [dispatch, userId, axiosPrivate]);
+  }, [dispatch, axiosPrivate]);
+
+  // console.log(posts, "all posts on feed");
+ 
 
   return (
     <>
       <Box flex={3.5} p={2}>
         {(!userId || user._id === userId) && <Share />}
-        {posts.map((post) => (
-          <Post
-            key={post._id}
-            post={post}
-            development={import.meta.env.VITE_APP_DEVELOPMENT === "true"}
-          />
-        ))}
+
+        {userId
+          ? posts
+              .filter((post) => post.owner._id === userId)
+              .map((post) => (
+                <Post
+                  key={post._id}
+                  post={post}
+                  development={import.meta.env.VITE_APP_DEVELOPMENT === "true"}
+                />
+              ))
+          : posts.map((post) => (
+              <Post
+                key={post._id}
+                post={post}
+                development={import.meta.env.VITE_APP_DEVELOPMENT === "true"}
+              />
+            ))}
       </Box>
     </>
   );

@@ -16,6 +16,6 @@ router.patch('/blockUser/:userEmail',adminAuthorize,blockUser)
 
 // Get all Reports
 
-router.get('/reportsList',getAllReports)
+router.get('/reportsList',adminAuthorize,getAllReports)
 
 export default router;

@@ -26,6 +26,7 @@
     "nodemon": "^2.0.22",
     "path": "^0.12.7",
     "sharp": "^0.32.5",
+    "socket.io": "^4.7.2",
     "uuid": "^9.0.0"
   },
   "type": "module"

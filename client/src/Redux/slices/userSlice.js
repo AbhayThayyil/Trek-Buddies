@@ -1,13 +1,12 @@
 import { createSlice, createAsyncThunk, current } from "@reduxjs/toolkit";
 import authService from "../../hooks/authService";
-import axios, { axiosPrivate } from "../../utils/axios";
 
 const initialState = {
-  userInfo: {
-    accessToken: null,
-  },
+  userInfo: {},
+
   allUsers: [],
   friendsData: [],
+  persist: JSON.parse(localStorage.getItem("persist")) || false,
 
   status: "idle", // idle,loading,success,fail
   error: null,
@@ -120,45 +119,58 @@ export const getAllFriendsData = createAsyncThunk(
   }
 );
 
+// To LOGOUT
+export const userLogout = createAsyncThunk(
+  "users/userLogout",
+  async ({ axiosPrivate }, { rejectWithValue }) => {
+    try {
+      const response = await axiosPrivate.get("/auth/logout");
+      console.log(response.data, "response after logout");
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+//Follow
+export const followUser = createAsyncThunk(
+  "users/followUser",
+  async ({ axiosPrivate, userId }, { rejectWithValue }) => {
+    try {
+      const response = await axiosPrivate.put(`/users/${userId}/follow`);
+      console.log(response.data, "follow response");
+      return response.data.followedUserId;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+//Unfollow
+export const unfollowUser = createAsyncThunk(
+  "users/unfollowUser",
+  async ({ axiosPrivate, userId }, { rejectWithValue }) => {
+    try {
+      const response = await axiosPrivate.put(`/users/${userId}/unfollow`);
+      console.log(response.data, "unfollow response");
+      return response.data.unfollowedUserId;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
     updateAccessToken: (state, action) => {
-     
       state.userInfo.accessToken = action.payload;
-      
-      // return {
-      //   ...state,
-      //   userInfo: {
-      //     ...state.userInfo,
-      //     accessToken: action.payload,
-      //   },
-      // };
     },
-    updateFollow: (state, action) => {
-      return {
-        ...state,
-        userInfo: {
-          ...state.userInfo,
-          following: [...state.userInfo.following, action.payload],
-        },
-      };
+
+    searchUser: (state, action) => {
+      state.searchData = action.payload;
     },
-    updateUnfollow: (state, action) => {
-      return {
-        ...state,
-        userInfo: {
-          ...state.userInfo,
-          following: state.userInfo.following.filter(
-            (following) => following !== action.payload
-          ),
-        },
-      };
-    },
-    logOut: (state, action) => {
-      state.user = null;
-      state.token = null;
+    setPersist: (state, action) => {
+      state.persist = action.payload;
     },
   },
   extraReducers(builder) {
@@ -175,6 +187,7 @@ const userSlice = createSlice({
         state.status = "fail";
         state.error = action.error.message;
       })
+
       .addCase(updateProfilePicture.pending, (state, action) => {
         state.status = "loading";
       })
@@ -230,6 +243,56 @@ const userSlice = createSlice({
       .addCase(getAllFriendsData.rejected, (state, action) => {
         state.status = "fail";
         state.error = action.error.message;
+      })
+      .addCase(userLogout.pending, (state, action) => {
+        state.status = "loading";
+      })
+      .addCase(userLogout.fulfilled, (state, action) => {
+        state.status = "success";
+        state.userInfo = {};
+      })
+      .addCase(userLogout.rejected, (state, action) => {
+        state.status = "fail";
+        state.error = action.error.message;
+      })
+      .addCase(followUser.pending, (state, action) => {
+        state.status = "loading";
+      })
+      .addCase(followUser.fulfilled, (state, action) => {
+        state.status = "success";
+        state.userInfo.following.push(action.payload);
+
+        const followedUser = state.allUsers.find(
+          (user) => user._id === action.payload
+        );
+        if (followedUser) {
+          followedUser.followers.push(state.userInfo._id);
+        }
+      })
+      .addCase(followUser.rejected, (state, action) => {
+        state.status = "fail";
+        state.error = action.error.message;
+      })
+      .addCase(unfollowUser.pending, (state, action) => {
+        state.status = "loading";
+      })
+      .addCase(unfollowUser.fulfilled, (state, action) => {
+        state.status = "success";
+        state.userInfo.following = state.userInfo.following.filter(
+          (elem) => elem !== action.payload
+        );
+        const unfollowedUser = state.allUsers.find(
+          (user) => user._id === action.payload
+        );
+        if (unfollowedUser) {
+          unfollowedUser.followers = unfollowedUser.followers.filter(
+            (elem) => elem !== state.userInfo._id
+          );
+        }
+      })
+      .addCase(unfollowUser.rejected, (state, action) => {
+        state.status = "fail";
+        state.error = action.error.message;
       });
   },
 });
@@ -240,8 +303,13 @@ export const selectAllError = (state) => state.user.error;
 export const selectUserState = (state) => state.user;
 export const getAllUsersData = (state) => state.user.allUsers;
 export const getFriendsDetails = (state) => state.user.friendsData;
+export const selectPersistState = (state) => state.user.persist;
 
-export const { updateAccessToken, updateFollow, updateUnfollow, logOut } =
-  userSlice.actions;
+export const {
+  updateAccessToken,
+
+  logOut,
+  setPersist,
+} = userSlice.actions;
 
 export default userSlice.reducer;

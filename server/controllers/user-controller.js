@@ -130,7 +130,9 @@ export const followUser = async (req, res) => {
           userToFollow.updateOne({ $push: { followers: req.userId } }),
           currentUser.updateOne({ $push: { following: req.params.id } }),
         ]);
-        res.status(200).json("User followed");
+        res
+          .status(200)
+          .json({ message: "User followed", followedUserId: req.params.id });
       } else {
         res.status(403).json("You are already following this user");
       }
@@ -160,7 +162,7 @@ export const unfollowUser = async (req, res) => {
           userToUnfollow.updateOne({ $pull: { followers: req.userId } }),
           currentUser.updateOne({ $pull: { following: req.params.id } }),
         ]);
-        res.status(200).json("User Unfollowed");
+        res.status(200).json({message:"User Unfollowed",unfollowedUserId:req.params.id});
       } else {
         res.status(403).json("You are not following this user");
       }
@@ -181,26 +183,46 @@ export const getFriendsData = async (req, res) => {
         return User.findById(followedId);
       })
     );
-    // console.log(friends, "friends chk");
     let friendList = [];
-    
-    friends.map(async (friend) => {
-      // TODO : Add profilepic URL to get image .Fix that
-      // if (friend?.profilePicture) {
-      //   const getObjectParams = {
-      //     Bucket: bucketName,
-      //     Key: friend.profilePicture,
-      //   };
-      //   const command = new GetObjectCommand(getObjectParams);
-      //   const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
-      //   friend.profilePictureURL = url;
-      //   friendList.push(friend);
-      // } 
-      // console.log(friend,"friends");
-      friendList.push(friend)
-    });
 
-    // console.log(friendList, "friendlist chk");
+    for (const friend of friends) {
+      if (friend.profilePicture) {
+        const getObjectParams = {
+          Bucket: bucketName,
+          Key: friend.profilePicture,
+        };
+        const command = new GetObjectCommand(getObjectParams);
+        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        friend.profilePictureURL = url;
+      }
+      if (friend.coverPicture) {
+        const getObjectParams = {
+          Bucket: bucketName,
+          Key: friend.coverPicture,
+        };
+        const command = new GetObjectCommand(getObjectParams);
+        const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+        friend.coverPictureURL = url;
+      }
+      friendList.push(friend);
+    }
+
+    // friends.map(async (friend) => {
+    //   // TODO : Add profilepic URL to get image .Fix that
+    //   if (friend?.profilePicture) {
+    //     const getObjectParams = {
+    //       Bucket: bucketName,
+    //       Key: friend.profilePicture,
+    //     };
+    //     const command = new GetObjectCommand(getObjectParams);
+    //     const url = await getSignedUrl(s3, command, { expiresIn: 3600 });
+    //     friend.profilePictureURL = url;
+    //     friendList.push(friend);
+    //   }
+    //   // console.log(friend,"friends");
+    //   friendList.push(friend)
+    // });
+
     res.status(200).json(friendList);
   } catch (err) {
     res.status(500).json(err);
