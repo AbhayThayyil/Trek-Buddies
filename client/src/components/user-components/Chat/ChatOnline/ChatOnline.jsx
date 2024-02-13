@@ -1,19 +1,29 @@
 import { Avatar, Badge, Box, Typography } from "@mui/material";
 import React, { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { getFriendsDetails } from "../../../../Redux/slices/userSlice";
 import useAxiosPrivate from "../../../../hooks/useAxiosPrivate";
+import {
+  selectOnlineUsers,
+  selectOnlineFriends,
+  setOnlineFriends,
+} from "../../../../Redux/slices/chatSlice";
 
-const ChatOnline = ({ onlineUsers, currentUserId, setCurrentChat }) => {
+const ChatOnline = ({ currentUserId, setCurrentChat }) => {
   const axiosPrivate = useAxiosPrivate();
+  const dispatch = useDispatch();
 
+  const onlineUsers = useSelector(selectOnlineUsers);
   const friends = useSelector(getFriendsDetails);
+  const onlineFriends = useSelector(selectOnlineFriends);
 
-  const [onlineFriends, setOnlineFriends] = useState([]);
+  
 
   useEffect(() => {
-    setOnlineFriends(
-      friends.filter((friend) => onlineUsers.includes(friend._id))
+    dispatch(
+      setOnlineFriends(
+        friends.filter((friend) => onlineUsers.includes(friend._id))
+      )
     );
   }, [friends, onlineUsers]);
 
@@ -30,7 +40,7 @@ const ChatOnline = ({ onlineUsers, currentUserId, setCurrentChat }) => {
   return (
     <>
       <Box className="chatOnline">
-        {onlineFriends.map((friend) => (
+        {onlineFriends?.map((friend) => (
           <Box
             className="chatOnlineFriend"
             sx={{

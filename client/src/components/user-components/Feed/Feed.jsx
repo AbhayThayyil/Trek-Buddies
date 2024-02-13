@@ -22,9 +22,12 @@ const Feed = ({ userId }) => {
     dispatch(getAllUsersInfo({ axiosPrivate }));
   }, []);
 
+  
+
   const posts = useSelector(getAllPosts);
+  console.log(posts);
   const user = useSelector(selectAllUsers);
-  // console.log(user, "user data from redux store");
+  console.log(user, "user data from redux store");
 
   const PF = import.meta.env.VITE_APP_PUBLIC_FOLDER;
 
@@ -51,14 +54,14 @@ const Feed = ({ userId }) => {
                 <Post
                   key={post._id}
                   post={post}
-                  development={import.meta.env.VITE_APP_DEVELOPMENT === "true"}
+                  
                 />
               ))
           : posts.map((post) => (
               <Post
                 key={post._id}
                 post={post}
-                development={import.meta.env.VITE_APP_DEVELOPMENT === "true"}
+                
               />
             ))}
       </Box>

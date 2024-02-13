@@ -49,7 +49,7 @@ import ReportPost from "./ReportPost/ReportPost";
 
 // const development=import.meta.env.VITE_APP_DEVELOPMENT==='true'  // todo : To save s3 calls.Change on production
 
-const Post = ({ post, development }) => {
+const Post = ({ post }) => {
   const axiosPrivate = useAxiosPrivate();
   const dispatch = useDispatch();
 
@@ -65,6 +65,8 @@ const Post = ({ post, development }) => {
   const allUsers = useSelector(getAllUsersData);
 
   const currentUser = allUsers.find((user) => user._id === post.owner._id);
+
+  console.log(currentUser);
 
   // To set tags
   useEffect(() => {
@@ -285,7 +287,12 @@ const Post = ({ post, development }) => {
             <CardMedia
               component="img"
               height="250"
-              image={development ? "Images/coverPic.avif" : post?.imageURL}
+              
+              image={
+                import.meta.env.VITE_NODE_ENV === "production"
+                  ? post?.imageURL
+                  : "Images/coverPic.avif"
+              }
               alt="Paella dish"
               // maxWidth={"100%"}
 

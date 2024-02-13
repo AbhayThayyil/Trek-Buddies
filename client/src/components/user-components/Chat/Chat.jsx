@@ -13,23 +13,31 @@ import Message from "./Message/Message";
 
 import SendIcon from "@mui/icons-material/Send";
 import ChatOnline from "./ChatOnline/ChatOnline";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   getFriendsDetails,
   selectAllUsers,
 } from "../../../Redux/slices/userSlice";
+import {
+  initializeSocket,
+  selectOnlineUsers,
+  selectSocket,
+  setOnlineUsers,
+} from "../../../Redux/slices/chatSlice";
 import useAxiosPrivate from "../../../hooks/useAxiosPrivate";
 import { io } from "socket.io-client";
 
 const Chat = () => {
   const axiosPrivate = useAxiosPrivate();
+  const dispatch = useDispatch();
 
   const [conversations, setConversations] = useState([]);
   const [currentChat, setCurrentChat] = useState(null);
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [receivedMessage, setReceivedMessage] = useState(null);
-  const [onlineUsers, setOnlineUsers] = useState([]);
+
+  const onlineUsers = useSelector(selectOnlineUsers);
 
   console.log(onlineUsers, "online users chk");
 
@@ -37,10 +45,12 @@ const Chat = () => {
   const scrollRef = useRef();
 
   const user = useSelector(selectAllUsers);
+
   const allFriends = useSelector(getFriendsDetails);
 
   useEffect(() => {
     socket.current = io("http://localhost:5000");
+
     socket.current.on("getMessage", (data) => {
       setReceivedMessage({
         sender: data.senderId,
@@ -62,9 +72,11 @@ const Chat = () => {
   useEffect(() => {
     socket.current.emit("addUser", user._id);
     socket.current.on("getUsers", (users) => {
-      setOnlineUsers(
-        user?.following?.filter((friend) =>
-          users.some((elem) => elem.userId === friend)
+      dispatch(
+        setOnlineUsers(
+          user?.following?.filter((friend) =>
+            users.some((elem) => elem.userId === friend)
+          )
         )
       );
     });
@@ -285,7 +297,6 @@ const Chat = () => {
           >
             <Typography variant="h5">These people are Online</Typography>
             <ChatOnline
-              onlineUsers={onlineUsers}
               currentUserId={user._id}
               setCurrentChat={setCurrentChat}
             />

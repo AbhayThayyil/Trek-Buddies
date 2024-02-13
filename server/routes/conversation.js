@@ -12,7 +12,7 @@ router.post("/",authorization,createNewConversation)
 router.get("/getConversations",authorization,getUserConversation)
 
 //Get Conversation of 2 users
-router.get("/getConversation/:firstUserId/:secondUserId",getTwoUserConversation)
+router.get("/getConversation/:firstUserId/:secondUserId",authorization,getTwoUserConversation)
 
 
 export default router;

@@ -72,6 +72,9 @@ const Navigationbar = () => {
   const axiosPrivate = useAxiosPrivate();
   const navigate = useNavigate();
 
+
+  // console.log(onlineUsers,"onlineUsers in navbar chk");
+
   const PF = import.meta.env.VITE_APP_PUBLIC_FOLDER;
 
   // TODO: WRITE CODE : handle the logout here
@@ -197,7 +200,7 @@ const Navigationbar = () => {
                 src={
                   currentUser?.profilePicture
                     ? currentUser.profilePictureURL
-                    : "/static/images/avatar/1.jpg"
+                    : ""
                 }
               />
             </IconButton>
@@ -207,7 +210,7 @@ const Navigationbar = () => {
               setOpenMenu(true);
             }}
           >
-            <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" />
+            <Avatar alt="Remy Sharp" src="" />
             <Typography variant="span">{`${currentUser?.firstName} ${currentUser?.lastName}`}</Typography>
           </UserBox>
         </StyledToolbar>

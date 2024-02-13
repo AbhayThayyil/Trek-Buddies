@@ -27,6 +27,7 @@ export const initializeSocket = (httpServer) => {
   //connection
   io.on("connection", (socket) => {
     console.log("A user connected");
+    console.log(socket,"=======socket data=========");
 
     //After every connection take userId and socketId from user
     socket.on("addUser", (userId) => {
@@ -37,6 +38,7 @@ export const initializeSocket = (httpServer) => {
     // Send and receive private msgs
     socket.on("sendMessage", ({ senderId, receiverId, text }) => {
       const receiver = getUser(receiverId);
+      console.log(receiver,"==========receiver data========");
       io.to(receiver.socketId).emit("getMessage", {
         senderId,
         text,

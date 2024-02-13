@@ -173,7 +173,7 @@ const userSlice = createSlice({
       state.persist = action.payload;
     },
   },
-  extraReducers(builder) {
+  extraReducers: (builder) => {
     builder
       .addCase(updateUser.pending, (state, action) => {
         state.status = "loading";

@@ -7,6 +7,7 @@ import userSlice from "./slices/userSlice";
 import postSlice from "./slices/postSlice";
 import adminSlice from "./slices/adminSlice";
 import tripSlice from "./slices/tripSlice";
+import chatSlice from "./slices/chatSlice";
 
 // export default configureStore({
 //   reducer: {
@@ -27,6 +28,7 @@ const rootReducer = combineReducers({
   user: userSlice,
   post: postSlice,
   trip: tripSlice,
+  chat: chatSlice,
   admin: adminSlice,
 });
 
