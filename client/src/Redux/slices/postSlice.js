@@ -10,13 +10,13 @@ const initialState = {
 export const fetchPosts = createAsyncThunk(
   "post/fetchPosts",
   async ({ userId, axiosPrivate }, { rejectWithValue }) => {
-    // console.log(userId, "id check");
+    console.log(userId, "id check");
     try {
       const response = userId
         ? await axiosPrivate.get(`/posts/profile/${userId}`)
         : await axiosPrivate.get(`/posts/timeline/all`);
 
-      // console.log(response.data, "what is response in fetchposts");
+      console.log(response.data, "what is response in fetchposts");
       // response.data.sort((p1, p2) => {
       //   return new Date(p2.createdAt) - new Date(p1.createdAt);
       // });

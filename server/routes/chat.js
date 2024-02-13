@@ -6,7 +6,7 @@ import { createMessage, getMessages } from '../controllers/chat-controller.js';
 const router = Router();
 
 // New Message created
-router.post("/",createMessage)
+router.post("/",authorization,createMessage)
 
 // Get messages
 router.get("/:conversationId",authorization,getMessages)
