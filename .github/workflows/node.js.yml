@@ -24,9 +24,13 @@ jobs:
     - run: |
        npm i 
        cd client
+       touch .env
+       echo "${{ secrets.PROD_CLIENT_ENV }}" > .env
        npm i
        cd ..
        cd server
+       touch .env
+       echo "${{ secrets.PROD_SERVER_ENV }}" > .env
        npm i
        cd ..
        npm run prod
