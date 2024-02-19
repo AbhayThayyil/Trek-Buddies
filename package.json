@@ -9,7 +9,7 @@
     "frontend-prod":"cd client && npm run build",
     "backend":"cd server && npm start",
     "dev":"concurrently \"npm run frontend-dev\" \"npm run backend\"",
-    "prod": "concurrently \"npm run frontend\" \"npm run backend\""
+    "prod": "concurrently \"npm run frontend-prod\" \"npm run backend\""
 
   },
   "repository": {
