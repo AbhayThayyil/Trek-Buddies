@@ -25,18 +25,18 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
-    - run: |
-       npm i 
+    - run: | 
        cd client
+       npm i
        touch .env
        echo "${{ secrets.PROD_CLIENT_ENV }}" > .env
-       npm i
        cd ..
        cd server
+       npm i
        touch .env
        echo "${{ secrets.PROD_SERVER_ENV }}" > .env
-       npm i
        cd ..
+       npm i
        npm run prod
       
     
